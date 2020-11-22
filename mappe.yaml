@@ -1,0 +1,246 @@
+regions:
+  Koenigsberg:
+    - 223408
+    - 103906
+  Brandenburg:
+    - 130969
+  Pomerania:
+    - 130971 Poznan
+    - 224460 # Opole
+europe_borders: {
+  # y1, x1 = 62.0, 35.0
+  # y0, x0 = 34.0, -11.0
+  'geometry': {'type': 'Polygon',
+                'coordinates': [[[-11.0, 34.0],
+                                 [-11.0, 62.0],
+                                 [35.0, 62.0],
+                                 [35.0, 34.0],
+                                 [-11.0, 34.0]]]},
+   'properties': {
+     'name': 'Europe Borders'
+   }
+  }
+
+
+maps:
+  Regno Unito:
+    config:
+      facecolor1: darkblue
+      facecolor2: blue
+
+    territori:
+      Scotland:
+        - UKM
+      Wales:
+        - UKL
+        - UKG
+      Yorkshire:
+        - UKC
+        - UKD
+        - UKE
+      London:
+        - UKH
+        - UKI
+        - UKF
+        - UKJ
+        - UKK
+      Ireland:
+        - IE
+        - UKN
+  Russia:
+    config:
+      facecolor1: darkred
+      facecolor2: red
+
+    territori:
+      Mosca:
+        - 1029256
+      San Pietroburgo:
+        - 155262  # Pskov
+        - 337422  # Pietroburgo
+        - 176095
+        - 89331 # Novograd Grande
+      Baltici: ["EE", "LT", "LV"]
+      Ucraina:
+        - 72634 # Odessa
+        - 71022 # Cherson
+        - 71236
+        - 71248 # Kiev
+  #      - 42866 # Kiev
+        - 71236 # Rivne
+        - 71245 # Zitomir
+        - 72639 # Crimea
+        - 71064 # Volinia
+        - 71249 # Chernihiv
+        - 72635
+        - 71971
+        - 72526
+        - 58974 # MD
+        - 90726
+        - 91294
+        - 71250 # Sumy
+        - 71254
+        - 71980 # Zaporizhia
+        - 91278 # Cherkasy
+        - 90742 # Chmelnyckyk
+        - 101746 # Dnipr
+        - 101859 # Kirowhrad
+        - 393980  # Karelia
+      Belarus:
+        - BY  # 59065
+      Polska:
+        - 130914 #
+        - 130935 # Warszawa
+        - 130919  # Lublin
+        - 224461 # Czestochowa
+        - 224458 # Łodz
+
+  Indipendenti:
+    config:
+      facecolor1: orange
+      facecolor2: orange
+
+    territori:
+      Svizzera:
+      - "CH"
+      Portugal:
+      - "PT"
+      Spain:
+        - "ES"
+      Denmark:
+        - "DK"
+      Sweden:
+        - "SE"
+      Norway:
+        - "NO"
+      Finland:
+        - "FI"
+  Prussia:
+    config:
+      facecolor1: black
+      facecolor2: black
+
+    territori:
+      Reno:
+        - FRF1
+      Germania:
+        - DE
+      Prussia:
+        - PL4 # Pomerania
+        - PL6 # Pomerania
+        - PL22 # Slesia
+        - PL5 # Slesia
+        - 103906 # Konigsberg
+  Asburgici:
+    config:
+      facecolor1: yellow
+      facecolor2: yellow
+
+    territori:
+      Wien:
+      - AT
+      - ITH1
+      - ITH2 # trentino alto adige
+      Istria:
+      - ITH43  # GO
+      - ITH44  # TS
+      - SI
+      - HR # istria
+      - BA
+      Boemia:
+      - CZ
+      - SK
+      - 72489 # Trans-carpazia UK
+
+      Galizia:
+      - PL21
+      - 130957 # Pre-carpazia PL
+      - 72380 # Leopoli
+      - 72488 # Ivano-Frankivsk
+      - 72525 # Ternopil
+      Ungheria:
+      - HU
+      - RO1
+      - RO42
+  Ottomano:
+    config:
+      facecolor1: brown
+      facecolor2: brown
+
+    territori:
+      Serbia:
+      - RS
+      - MK
+      - ME
+      Albania:
+        - AL
+      Grecia:
+      - EL
+      - TR1
+      - TR21
+      Bulgaria:
+      - BG
+      Romania:
+      - RO2
+      - RO3
+      - RO41
+      Anatolia:
+        - TR22
+        - TR3
+        - TR4
+  France:
+    config:
+      facecolor1: violet
+      facecolor2: violet
+
+    territori:
+      Occitanie:
+        - FRJ # Occitanie
+      Bretagne:
+        - FRG # Pays de la Loire
+        - FRD
+        - FRH
+      Auvergne:
+        - FRK
+        - FRL
+      Netherland:
+        - BE
+        - NL
+        - LU
+      Bordeaux:
+        - FRI
+      Borgougne:
+        - FRC  # Bourgougne
+        - FRE  # Haute de France
+        - FRF3 # franca contea
+        - FRF2
+      Paris:
+        - FR1 # paris
+        - FRB # centre
+  Italia:
+    config:
+      facecolor1: darkgreen
+      facecolor2: green
+    territori:
+      Piemonte:
+      - ITC1
+      - ITC2
+      - ITC3
+      Lombardo Veneto:
+      - 'ITC4'
+      - 'ITH3'
+      - ITH42
+      - ITH41
+      Sicilia:
+      -  ITG1 # sicilia
+      -  ITG2 # sardegna
+      Regno di Napoli:
+      -  ITF # regno di napoli
+      Roma:
+      - ITI2
+      - ITI3
+      - ITI4
+      Granducati:
+      - ITH5 # Emilia
+      - ITI1
+
