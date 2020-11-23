@@ -117,24 +117,34 @@ maps:
         - "FI"
   Prussia:
     config:
-      facecolor1: black
-      facecolor2: black
+      facecolor1: "#c37437"
+      facecolor2: "#c54e25"
 
     territori:
-      Reno:
-        - FRF1
-      Germania:
-        - DE
       Prussia:
         - PL4 # Pomerania
         - PL6 # Pomerania
+        - 103906 # Konigsberg
+      Reno:
+        - DE5
+        - DE6
+        - DK032
+      Berlino:
+        - DE3
+        - DE4
+        - 130969
+      Bayern:
+        - FRF1
+        - DE1
+        - DE2
+
+      Slesia:
         - PL22 # Slesia
         - PL5 # Slesia
-        - 103906 # Konigsberg
   Asburgici:
     config:
-      facecolor1: yellow
-      facecolor2: yellow
+      facecolor1: '#d5c232'
+      facecolor2: '#b3aa1b'
 
     territori:
       Wien:
@@ -149,10 +159,10 @@ maps:
       - BA
       Boemia:
       - CZ
-      - SK
-      - 72489 # Trans-carpazia UK
 
       Galizia:
+      - SK
+      - 72489 # Trans-carpazia UK
       - PL21
       - 130957 # Pre-carpazia PL
       - 72380 # Leopoli
@@ -164,8 +174,8 @@ maps:
       - RO42
   Ottomano:
     config:
-      facecolor1: brown
-      facecolor2: brown
+      facecolor1: "#76cfe7"
+      facecolor2: "#2c97ba"
 
     territori:
       Serbia:
@@ -188,10 +198,14 @@ maps:
         - TR22
         - TR3
         - TR4
+        - TR5
+        - TR6
+        - TR7
+        - TR8
   France:
     config:
-      facecolor1: violet
-      facecolor2: violet
+      facecolor1: "#a676c9"
+      facecolor2: "#6d1195"
 
     territori:
       Occitanie:
