@@ -125,7 +125,7 @@ maps:
         - PL4 # Pomerania
         - PL6 # Pomerania
         - 103906 # Konigsberg
-      Reno:
+      Renania:
         - DE5
         - DE6
         - DK032
@@ -137,10 +137,10 @@ maps:
         - FRF1
         - DE1
         - DE2
-
       Slesia:
         - PL22 # Slesia
         - PL5 # Slesia
+
   Asburgici:
     config:
       facecolor1: '#d5c232'
@@ -161,8 +161,6 @@ maps:
       - CZ
 
       Galizia:
-      - SK
-      - 72489 # Trans-carpazia UK
       - PL21
       - 130957 # Pre-carpazia PL
       - 72380 # Leopoli
@@ -172,6 +170,9 @@ maps:
       - HU
       - RO1
       - RO42
+      - SK
+      - 72489 # Trans-carpazia UA
+
   Ottomano:
     config:
       facecolor1: "#76cfe7"
@@ -245,9 +246,9 @@ maps:
       - 'ITH3'
       - ITH42
       - ITH41
-      Sicilia:
-      -  ITG1 # sicilia
-      -  ITG2 # sardegna
+      Sicilia e Sardegna:
+      - ITG2 # sardegna
+      - ITG1 # sicilia
       Regno di Napoli:
       -  ITF # regno di napoli
       Roma:
