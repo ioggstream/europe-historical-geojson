@@ -6,6 +6,7 @@ regions:
     - 130969
   Pomerania:
     - 130971 Poznan
+    - 2406440
     - 224460 # Opole
 europe_borders: {
   # y1, x1 = 62.0, 35.0
@@ -66,7 +67,8 @@ maps:
         - 71022 # Cherson
         - 71236
         - 71248 # Kiev
-  #      - 42866 # Kiev
+        - 58974 # MD
+        #      - 42866 # Kiev
         - 71236 # Rivne
         - 71245 # Zitomir
         - 72639 # Crimea
@@ -75,7 +77,6 @@ maps:
         - 72635
         - 71971
         - 72526
-        - 58974 # MD
         - 90726
         - 91294
         - 71250 # Sumy
@@ -122,7 +123,11 @@ maps:
 
     territori:
       Prussia:
-        - PL4 # Pomerania
+        - PL41 # Pomerania
+        #- PL415 # Posen
+        #- PL417
+        #- PL411
+        #- PL418
         - PL6 # Pomerania
         - 103906 # Konigsberg
       Renania:
