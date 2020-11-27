@@ -28,7 +28,6 @@ maps:
     config:
       facecolor1: darkblue
       facecolor2: blue
-
     territori:
       Scotland:
         - UKM
@@ -73,10 +72,9 @@ maps:
         - 71245 # Zitomir
         - 72639 # Crimea
         - 71064 # Volinia
-        - 71249 # Chernihiv
+        - 71249 # Chernihiv ? HU
         - 72635
         - 71971
-        - 72526
         - 90726
         - 91294
         - 71250 # Sumy
@@ -120,7 +118,7 @@ maps:
     config:
       facecolor1: "#c37437"
       facecolor2: "#c54e25"
-
+    country-borders: "data/geojson/germany-1914.geojson"
     territori:
       Prussia:
         - PL41 # Pomerania
@@ -141,6 +139,7 @@ maps:
         - DE4
         - 130969
       Bayern:
+        - FRF33
         - FRF1
         - DE1
         - DE2
@@ -173,6 +172,8 @@ maps:
       - 72380 # Leopoli
       - 72488 # Ivano-Frankivsk
       - 72525 # Ternopil
+      - 72526 # Chernivitsi UA
+
       Ungheria:
       - HU
       - RO1
