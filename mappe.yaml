@@ -118,7 +118,7 @@ maps:
     config:
       facecolor1: "#c37437"
       facecolor2: "#c54e25"
-    country-borders: "data/geojson/germany-1914.geojson"
+    country-borders: foo.geojson #"data/geojson/germany-1914.geojson"
     territori:
       Prussia:
         - PL41 # Pomerania

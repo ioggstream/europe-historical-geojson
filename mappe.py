@@ -16,6 +16,7 @@ from pandas import DataFrame
 from requests import get
 from shapely.geometry import MultiPolygon, Polygon
 from shapely.ops import cascaded_union
+from contextily import add_basemap
 
 requests_cache.install_cache("demo_cache")
 
@@ -28,8 +29,6 @@ def _get_europe():
     eu_area = gpd.read_file(StringIO(json.dumps(europe)))
     eu_area = eu_area.set_crs("EPSG:4326")
     return eu_area
-
-
 
 
 def filter_noise(shape: MultiPolygon):
@@ -91,7 +90,7 @@ def get_area(label) -> GeoSeries:
 
 
 def join_areas(areas: List) -> GeoSeries:
-    get_areas = [get_area(label) for label in areas]
+    get_areas = [get_area(label) for label in areas if label]
     ret = GeoSeries(cascaded_union([x.geometry[0] for x in get_areas]))
     # ret = ret.set_crs("EPSG:4326")
     return ret  # .to_crs("EPSG:4326")
@@ -116,48 +115,75 @@ def get_state_df(state_label) -> GeoDataFrame:
     return ret
 
 
-def render(gdfm, facecolor1="blue", facecolor2="blue", ax=None):
+def render(
+    gdfm, facecolor1="blue", facecolor2="blue", ax=None, plot_labels=True, plot_geo=True
+):
     empire = gdfm
 
-    print(empire)
+    # print(empire)
     for region_name in empire.name:
         region = empire[empire.name == region_name]
-        print(region, region_name)
+        # print(region, region_name)
 
         togli_isolette(region, 0.2)
         empire[empire.name == region_name] = region
 
-        try:
-            points = (
-                region.intersection(_get_europe())
-                .to_crs(epsg=3857)
-                .representative_point()
-            )
-            for p in points:
-                plt.annotate(
-                    text=region_name,
-                    xy=p.coords[:][0],
-                    horizontalalignment="left",
-                    verticalalignment="baseline",
-                    fontsize=11,
-                    fontname="Times New Roman",
+        if plot_labels:
+            try:
+                points = (
+                    region.intersection(_get_europe())
+                    .to_crs(epsg=3857)
+                    .representative_point()
                 )
-        except:
-            pass
+                for p in points:
+                    plt.annotate(
+                        text=region_name,
+                        xy=p.coords[:][0],
+                        horizontalalignment="center",
+                        verticalalignment="baseline",
+                        fontsize=14,
+                        # fontstyle="italic",
+                        color="white",
+                        fontname="eufm10",
+                        #                    fontname="URW Bookman",
+                    )
+            except:
+                pass
 
     # Limit the map to EU and convert to 3857 to improve printing.
     empire = gdfm.intersection(_get_europe())
     empire = empire.to_crs(epsg=3857)
 
     # Draw borders with different colors.
-    empire.plot(ax=ax, edgecolor="white", facecolor=facecolor2, linewidth=2)
-    empire.plot(ax=ax, edgecolor="white", facecolor=facecolor1, linewidth=0, alpha=0.5)
+    if plot_geo:
+        empire.plot(
+            ax=ax, edgecolor="white", facecolor=facecolor2, linewidth=2, alpha=0.1
+        )
+        empire.plot(
+            ax=ax, edgecolor="white", facecolor=facecolor1, linewidth=0, alpha=0.5
+        )
+    else:
+        empire.plot(ax=ax, edgecolor="none", facecolor="none", linewidth=0)
 
 
-def render_state(state_label, ax):
+def addmap(ax):
+    fig, ax = plt.subplots(1, 1)
+    fig.set_size_inches(20, 20)
+    render_state("Ottomano", ax=ax)
+    ctx.add_basemap(ax1)
+
+
+def render_state(state_label, ax, plot_labels=True, plot_geo=True):
     state_area = get_state_df(state_label)
-    color_config = maps()[state_label]["config"]
-    render(state_area, ax=ax, **color_config)
+    state_config = maps()[state_label]
+    color_config = state_config["config"]
+    geo_config = state_config.get("country-borders")
+    if geo_config:
+        borders = gpd.read_file(open(geo_config))
+        state_area.geometry = state_area.geometry.intersection(borders)
+    render(
+        state_area, ax=ax, **color_config, plot_labels=plot_labels, plot_geo=plot_geo
+    )
     return state_area
 
 
@@ -169,8 +195,6 @@ def cm2inch(*tupl):
         return tuple(i / inch for i in tupl)
 
 
-
-
 def titola(df):
     points = df.to_crs(epsg=3857).representative_point()
     for p in points:
@@ -179,15 +203,23 @@ def titola(df):
         )
 
 
-def render_board():
-    from mpl_toolkits.axes_grid1 import make_axes_locatable
-
+def get_board():
     fig, risk_board = plt.subplots(1, 1)
     plt.tight_layout(pad=1)
     fig.set_size_inches(cm2inch(29 * 2, 21 * 2), forward=True)
     fig.set_dpi(300)
-    eu = _get_europe().to_crs(epsg=3857)
-    eu.plot(ax=risk_board, facecolor="lightblue")
+    return fig, risk_board
+
+
+def render_board():
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+    fig, risk_board = get_board()
+    fig_label, label_board = get_board()
+    fig_full, full_board = get_board()
+    if True:
+        eu = _get_europe().to_crs(epsg=3857)
+        eu.plot(ax=risk_board, facecolor="lightblue")
     countries = (
         "Italia",
         "France",
@@ -201,10 +233,24 @@ def render_board():
     from multiprocessing.pool import ThreadPool as Pool
     from functools import partial
 
-    with Pool(processes=10) as pool:
-        pool.map(partial(render_state, ax=risk_board), countries)
+    with Pool(processes=20) as pool:
+        #    pool.map(partial(render_state, ax=risk_board, plot_labels=False), countries)
+        #    pool.map(partial(render_state, ax=label_board, plot_geo=False), countries)
+        pool.map(partial(render_state, ax=full_board), countries)
     pool.join()
-    fig.savefig("/tmp/risk.png", dpi=300)
+    add_basemap(full_board)
+    fig.savefig("/tmp/risk-board.png", dpi=300, transparent=True)
+    fig_label.savefig("/tmp/label-board.png", dpi=300, transparent=True)
+    fig_full.savefig("/tmp/full-board.png", dpi=300, transparent=True)
+
+
+def unite_maps():
+    prussia = gpd.read_file(open("data/geojson/germany-1914.geojson"))
+    de = get_area("DE")
+    prussia.append(de)
+    p3 = GeoDataFrame(geometry=[prussia.geometry.unary_union], crs=prussia.crs)
+    impger = get_state_df("Prussia")
+    impger.intersection(p3).plot()
 
 
 if __name__ == "__main__":
