@@ -3,7 +3,7 @@ from io import StringIO
 from itertools import product
 from pathlib import Path
 from typing import List
-
+import time
 import geopandas as gpd
 import matplotlib
 import matplotlib.pyplot as plt
@@ -17,7 +17,8 @@ from requests import get
 from shapely.geometry import MultiPolygon, Polygon
 from shapely.ops import cascaded_union
 from contextily import add_basemap
-
+import logging
+log = logging.getLogger(__name__)
 requests_cache.install_cache("demo_cache")
 
 config = lambda: yaml.safe_load(Path("mappe.yaml").read_text())
@@ -59,13 +60,18 @@ def get_polygons(label):
     """
     coord_type = 3857
     coord_type = 4326
+    osm_fr = "http://polygons.openstreetmap.fr"
+    osm_tw = "https://api06.dev.openstreetmap.org"
     base = "https://gisco-services.ec.europa.eu/distribution/v2"
 
-    if isinstance(label, int):
-        return get(
-            f"http://polygons.openstreetmap.fr/get_geojson.py?id={label}&params=0"
-        ).content.decode()
-
+    if str(label).isdigit():
+        u = f"{osm_fr}/get_geojson.py?id={label}&params=0"
+        u=f"https://nominatim.openstreetmap.org/details.php?osmtype=R&osmid={label}&class=boundary&format=json"
+        log.warning("Retrieving %r", u)
+        res = get(u)
+        if res.content:
+            return res.content.decode()
+        return "{}"
     if label.startswith("http"):
         return get(label).content.decode()
 
@@ -89,7 +95,16 @@ def get_axis():
 
 
 def get_area(label) -> GeoSeries:
-    return gpd.read_file(get_polygons(label))
+    for i in range(3):
+        polygons = get_polygons(label)
+        log.warning("polygons: %r", polygons[:10] if polygons else "Vuoto")
+
+        if not polygons.startswith("None"):
+            break
+        time.sleep(1)
+    else:
+        raise ValueError(f"Can't find polygons for {label}")
+    return gpd.read_file(polygons)
 
 
 def join_areas(areas: List) -> GeoSeries:
@@ -179,7 +194,7 @@ def addmap(ax):
     fig, ax = plt.subplots(1, 1)
     fig.set_size_inches(20, 20)
     render_state("Ottomano", ax=ax)
-    ctx.add_basemap(ax1)
+    add_basemap(ax)
 
 
 def render_state(state_label, ax, plot_labels=True, plot_geo=True):
@@ -216,16 +231,14 @@ def get_board():
     return fig, risk_board
 
 
-def render_board():
-    from mpl_toolkits.axes_grid1 import make_axes_locatable
-
+def render_board(countries=None):
     fig, risk_board = get_board()
     fig_label, label_board = get_board()
     fig_full, full_board = get_board()
     if True:
         eu = _get_europe().to_crs(epsg=3857)
         eu.plot(ax=risk_board, facecolor="lightblue")
-    countries = (
+    countries = countries or (
         "Italia",
         "France",
         "Asburgici",
@@ -238,7 +251,7 @@ def render_board():
     from multiprocessing.pool import ThreadPool as Pool
     from functools import partial
 
-    with Pool(processes=20) as pool:
+    with Pool(processes=1) as pool:
         #    pool.map(partial(render_state, ax=risk_board, plot_labels=False), countries)
         #    pool.map(partial(render_state, ax=label_board, plot_geo=False), countries)
         pool.map(partial(render_state, ax=full_board), countries)
@@ -258,6 +271,11 @@ def unite_maps():
     impger.intersection(p3).plot()
     p3.to_file("germany-borders-1914.geojson", driver="GeoJSON")
 
+def test_kosovo():
+    res = get_polygons(2088990)
+    raise NotImplementedError
 
 if __name__ == "__main__":
-    render_board()
+    from sys import argv
+    countries = argv[1:] if len(argv) > 1 else None
+    render_board(countries)

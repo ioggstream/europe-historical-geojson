@@ -151,7 +151,6 @@ maps:
       Slesia:
         - PL22 # Slesia
         - PL5 # Slesia
-
   Asburgici:
     config:
       facecolor1: '#d5c232'
@@ -167,12 +166,12 @@ maps:
       - ITH44  # TS
       - SI
       - HR # istria
-      - BA
       Boemia:
       - CZ
 
       Galizia:
       - PL21
+      - PL225
       - 130957 # Pre-carpazia PL
       - 72380 # Leopoli
       - 72488 # Ivano-Frankivsk
@@ -185,7 +184,7 @@ maps:
       - RO42
       - SK
       - 72489 # Trans-carpazia UA
-
+      - RS12
   Ottomano:
     config:
       facecolor1: "#76cfe7"
@@ -193,11 +192,14 @@ maps:
 
     territori:
       Serbia:
-      - RS
+      - RS2
+      - RS11
       - MK
       - ME
+      - BA
+      - 2088990
       Albania:
-        - AL
+      - AL
       Grecia:
       - EL
       - TR1
