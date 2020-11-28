@@ -64,10 +64,13 @@ def get_polygons(label):
     if isinstance(label, int):
         return get(
             f"http://polygons.openstreetmap.fr/get_geojson.py?id={label}&params=0"
-        )
+        ).content.decode()
 
     if label.startswith("http"):
-        return get(label)
+        return get(label).content.decode()
+
+    if label.startswith("file://"):
+        return Path(label[7:]).read_text()
 
     for db, year in (("nuts", 2021), ("countries", 2020)):
         ret = get(
@@ -76,7 +79,7 @@ def get_polygons(label):
         if ret.status_code == 200:
             break
         print(f"cannot find {ret.url}")
-    return ret
+    return ret.content.decode()
 
 
 def get_axis():
@@ -86,7 +89,7 @@ def get_axis():
 
 
 def get_area(label) -> GeoSeries:
-    return gpd.read_file(get_polygons(label).content.decode())
+    return gpd.read_file(get_polygons(label))
 
 
 def join_areas(areas: List) -> GeoSeries:
@@ -110,6 +113,12 @@ def get_state_df(state_label) -> GeoDataFrame:
     ret = gpd.GeoDataFrame(df, geometry=s)
     for n, s in territori[1:]:
         ret = ret.append(gpd.GeoDataFrame(DataFrame({"name": [n]}), geometry=s))
+
+    state_config = maps()[state_label]
+    geo_config = state_config.get("country-borders")
+    if geo_config:
+        borders = gpd.read_file(open(geo_config)).to_crs(epsg=4326)
+        ret.geometry = ret.geometry.intersection(borders)
 
     ret = ret.set_crs("EPSG:4326")
     return ret
@@ -177,10 +186,6 @@ def render_state(state_label, ax, plot_labels=True, plot_geo=True):
     state_area = get_state_df(state_label)
     state_config = maps()[state_label]
     color_config = state_config["config"]
-    geo_config = state_config.get("country-borders")
-    if geo_config:
-        borders = gpd.read_file(open(geo_config))
-        state_area.geometry = state_area.geometry.intersection(borders)
     render(
         state_area, ax=ax, **color_config, plot_labels=plot_labels, plot_geo=plot_geo
     )
@@ -251,6 +256,7 @@ def unite_maps():
     p3 = GeoDataFrame(geometry=[prussia.geometry.unary_union], crs=prussia.crs)
     impger = get_state_df("Prussia")
     impger.intersection(p3).plot()
+    p3.to_file("germany-borders-1914.geojson", driver="GeoJSON")
 
 
 if __name__ == "__main__":

@@ -51,7 +51,7 @@ maps:
     config:
       facecolor1: darkred
       facecolor2: red
-
+    #country-borders: russian-empire-1914-boundaries.geojson
     territori:
       Mosca:
         - 1029256
@@ -88,12 +88,16 @@ maps:
       Belarus:
         - BY  # 59065
       Polska:
-        - 130914 #
-        - 130935 # Warszawa
-        - 130919  # Lublin
-        - 224461 # Czestochowa
-        - 224458 # Łodz
-
+        - file://poland-1914.geojson
+#        - 130914 #
+#        - 130935 # Warszawa
+#        - 130919  # Lublin
+#        - 224461 # Czestochowa
+#        - 224458 # Łodz
+#        - PL414
+#        - PL416
+#        - PL61
+#        - PL62
   Indipendenti:
     config:
       facecolor1: orange
@@ -118,7 +122,7 @@ maps:
     config:
       facecolor1: "#c37437"
       facecolor2: "#c54e25"
-    country-borders: foo.geojson #"data/geojson/germany-1914.geojson"
+    country-borders: germany-1914-boundaries.geojson #"data/geojson/germany-1914.geojson"
     territori:
       Prussia:
         - PL41 # Pomerania
