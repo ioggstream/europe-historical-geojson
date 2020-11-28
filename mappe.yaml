@@ -126,6 +126,7 @@ maps:
     territori:
       Prussia:
         - PL41 # Pomerania
+        - PL42
         #- PL415 # Posen
         #- PL417
         #- PL411
@@ -152,6 +153,7 @@ maps:
       Slesia:
         - PL22 # Slesia
         - PL5 # Slesia
+        - PL43
   Asburgici:
     config:
       facecolor1: '#d5c232'
