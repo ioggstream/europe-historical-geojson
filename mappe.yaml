@@ -3,7 +3,7 @@ regions:
     - 223408
     - 103906
   Brandenburg:
-    - 130969
+    - 130969 
   Pomerania:
     - 130971 Poznan
     - 2406440
@@ -139,6 +139,7 @@ maps:
         - DE9
         - DEA
         - DEF
+        - DEB
       Berlino:
         - DE3
         - DE4
