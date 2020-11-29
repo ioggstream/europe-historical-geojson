@@ -14,15 +14,41 @@ from geopandas import GeoDataFrame, GeoSeries
 from matplotlib import pyplot as plt
 from pandas import DataFrame
 from requests import get
+from requests_cache import CachedSession
 from shapely.geometry import MultiPolygon, Polygon
 from shapely.ops import cascaded_union
 from contextily import add_basemap
 import logging
+from shapely.geometry import shape, mapping
+
 log = logging.getLogger(__name__)
 requests_cache.install_cache("demo_cache")
 
 config = lambda: yaml.safe_load(Path("mappe.yaml").read_text())
 maps = lambda: config()["maps"]
+
+COUNTRIES = (
+    "Italia",
+    "France",
+    "Asburgici",
+    "Ottomano",
+    "Regno Unito",
+    "Indipendenti",
+    "Prussia",
+    "Russia",
+)
+
+MY_EPSG = 3003
+# MY_EPSG = "EPSG:4326"
+MY_EPSG = 2196
+MY_EPSG = 3395
+
+import pyproj
+
+MY_CRS = pyproj.Proj(
+    proj="cea", lon_0=0, lat_ts=45, x_0=0, y_0=0, ellps="WGS84", units="m"
+).srs
+# MY_CRS = f'EPSG:{MY_EPSG}'
 
 
 def _get_europe():
@@ -54,21 +80,26 @@ def togli_isolette_2(area, base):
             print("poli", i, poli.area)
 
 
-def get_polygons(label):
+def get_polygons(label, retry=0):
     """
     Si collega ad internet e scarica i poligoni associati alla label.
     """
-    coord_type = 3857
     coord_type = 4326
     osm_fr = "http://polygons.openstreetmap.fr"
     osm_tw = "https://api06.dev.openstreetmap.org"
     base = "https://gisco-services.ec.europa.eu/distribution/v2"
+    log.warning("Retrieving %r", label)
 
     if str(label).isdigit():
         u = f"{osm_fr}/get_geojson.py?id={label}&params=0"
-        u=f"https://nominatim.openstreetmap.org/details.php?osmtype=R&osmid={label}&class=boundary&format=json"
-        log.warning("Retrieving %r", u)
-        res = get(u)
+        # u=f"https://nominatim.openstreetmap.org/details.php?osmtype=R&osmid={label}&class=boundary&format=json"
+        if retry:
+            # If the entry is not in the geojson remote cache, trigger a regeneration
+            #  pinging poligons.
+            requests_cache.core.get_cache().delete_url(u)
+            get(f"http://polygons.openstreetmap.fr/?id={label}")
+        res = get(u, proxies={"http": "socks5://localhost:11111"})
+        log.warning("Request from cache: %r %r", u, res.from_cache)
         if res.content:
             return res.content.decode()
         return "{}"
@@ -96,22 +127,26 @@ def get_axis():
 
 def get_area(label) -> GeoSeries:
     for i in range(3):
-        polygons = get_polygons(label)
-        log.warning("polygons: %r", polygons[:10] if polygons else "Vuoto")
+        polygons = get_polygons(label, i)
+        log.warning(
+            "polygons: %r  len: %r head: %r",
+            label,
+            len(polygons),
+            polygons[:10] if polygons else "Vuoto",
+        )
 
-        if not polygons.startswith("None"):
+        if polygons.startswith("{"):
             break
-        time.sleep(1)
     else:
-        raise ValueError(f"Can't find polygons for {label}")
+        return None
+        # raise ValueError(f"Can't find polygons for {label}")
     return gpd.read_file(polygons)
 
 
 def join_areas(areas: List) -> GeoSeries:
     get_areas = [get_area(label) for label in areas if label]
-    ret = GeoSeries(cascaded_union([x.geometry[0] for x in get_areas]))
-    # ret = ret.set_crs("EPSG:4326")
-    return ret  # .to_crs("EPSG:4326")
+    ret = GeoSeries(cascaded_union([x.geometry[0] for x in get_areas if x is not None]))
+    return ret
 
 
 def get_state(state_label) -> dict:
@@ -143,6 +178,8 @@ def render(
     gdfm, facecolor1="blue", facecolor2="blue", ax=None, plot_labels=True, plot_geo=True
 ):
     empire = gdfm
+    epsg_projection = 3857
+    my_crs = MY_CRS
 
     # print(empire)
     for region_name in empire.name:
@@ -156,7 +193,7 @@ def render(
             try:
                 points = (
                     region.intersection(_get_europe())
-                    .to_crs(epsg=3857)
+                    .to_crs(my_crs)
                     .representative_point()
                 )
                 for p in points:
@@ -164,7 +201,7 @@ def render(
                         text=region_name,
                         xy=p.coords[:][0],
                         horizontalalignment="center",
-                        verticalalignment="baseline",
+                        verticalalignment="center",
                         fontsize=14,
                         # fontstyle="italic",
                         color="white",
@@ -176,15 +213,15 @@ def render(
 
     # Limit the map to EU and convert to 3857 to improve printing.
     empire = gdfm.intersection(_get_europe())
-    empire = empire.to_crs(epsg=3857)
+    empire = empire.to_crs(my_crs)
 
     # Draw borders with different colors.
     if plot_geo:
         empire.plot(
-            ax=ax, edgecolor="white", facecolor=facecolor2, linewidth=2, alpha=0.1
+            ax=ax, edgecolor="black", facecolor=facecolor2, linewidth=5, alpha=0.7
         )
         empire.plot(
-            ax=ax, edgecolor="white", facecolor=facecolor1, linewidth=0, alpha=0.5
+            ax=ax, edgecolor="black", facecolor=facecolor1, linewidth=0, alpha=0.5
         )
     else:
         empire.plot(ax=ax, edgecolor="none", facecolor="none", linewidth=0)
@@ -215,14 +252,6 @@ def cm2inch(*tupl):
         return tuple(i / inch for i in tupl)
 
 
-def titola(df):
-    points = df.to_crs(epsg=3857).representative_point()
-    for p in points:
-        plt.annotate(
-            s="Ciao", xy=p.coords[:][0],
-        )
-
-
 def get_board():
     fig, risk_board = plt.subplots(1, 1)
     plt.tight_layout(pad=1)
@@ -231,32 +260,23 @@ def get_board():
     return fig, risk_board
 
 
-def render_board(countries=None):
+def render_board(countries=COUNTRIES, background=False):
     fig, risk_board = get_board()
     fig_label, label_board = get_board()
     fig_full, full_board = get_board()
-    if True:
-        eu = _get_europe().to_crs(epsg=3857)
+    if background:
+        eu = _get_europe().to_crs(MY_CRS)
         eu.plot(ax=risk_board, facecolor="lightblue")
-    countries = countries or (
-        "Italia",
-        "France",
-        "Asburgici",
-        "Ottomano",
-        "Regno Unito",
-        "Indipendenti",
-        "Prussia",
-        "Russia",
-    )
     from multiprocessing.pool import ThreadPool as Pool
     from functools import partial
 
-    with Pool(processes=1) as pool:
-        #    pool.map(partial(render_state, ax=risk_board, plot_labels=False), countries)
-        #    pool.map(partial(render_state, ax=label_board, plot_geo=False), countries)
+    countries = countries or COUNTRIES
+    with Pool(processes=10) as pool:
+        pool.map(partial(render_state, ax=risk_board, plot_labels=False), countries)
+        pool.map(partial(render_state, ax=label_board, plot_geo=False), countries)
         pool.map(partial(render_state, ax=full_board), countries)
     pool.join()
-    add_basemap(full_board)
+    # add_basemap(full_board, crs=f"EPSG:{MY_EPSG}")
     fig.savefig("/tmp/risk-board.png", dpi=300, transparent=True)
     fig_label.savefig("/tmp/label-board.png", dpi=300, transparent=True)
     fig_full.savefig("/tmp/full-board.png", dpi=300, transparent=True)
@@ -271,11 +291,41 @@ def unite_maps():
     impger.intersection(p3).plot()
     p3.to_file("germany-borders-1914.geojson", driver="GeoJSON")
 
-def test_kosovo():
-    res = get_polygons(2088990)
-    raise NotImplementedError
+
+def borderize(df, x):
+    df_x = df[df.name == x]
+    brd = df_x.geometry.exterior.unary_union
+    poly = Polygon(shape(brd))
+    GeoSeries(poly).to_file(f"tmp-{x}.geojson", driver="GeoJSON")
+
+
+from urllib.parse import parse_qs, urlparse
+
+
+def dump_cache():
+    simple_cache = requests_cache.core.get_cache()
+    osm_requests = [
+        (k, v[0].url)
+        for k, v in simple_cache.responses.items()
+        if "polygons" in v[0].url
+    ]
+
+    def _get_osm_id(url):
+        return parse_qs(urlparse(url).query)["id"][0]
+
+    for k, u in osm_requests:
+        data = simple_cache.get_response_and_time(k)[0].content
+        if data.startswith(b"{"):
+            ("data/geojson" / Path(f"osm-{_get_osm_id(u)}.geojson")).write_bytes(data)
+
+
+def download_only():
+    for state_label in COUNTRIES:
+        get_state(state_label)
+
 
 if __name__ == "__main__":
     from sys import argv
+
     countries = argv[1:] if len(argv) > 1 else None
     render_board(countries)

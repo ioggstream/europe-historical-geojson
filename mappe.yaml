@@ -8,6 +8,18 @@ regions:
     - 130971 Poznan
     - 2406440
     - 224460 # Opole
+  Polska:
+    - 130914
+    #        - 130914 #
+    #        - 130935 # Warszawa
+    #        - 130919  # Lublin
+    #        - 224461 # Czestochowa
+    #        - 224458 # Łodz
+    #        - PL414
+    #        - PL416
+    #        - PL61
+    #        - PL62
+
 europe_borders: {
   # y1, x1 = 62.0, 35.0
   # y0, x0 = 34.0, -11.0
@@ -52,16 +64,7 @@ maps:
       facecolor1: darkred
       facecolor2: red
     #country-borders: russian-empire-1914-boundaries.geojson
-    territori:
-      Mosca:
-        - 1029256
-      San Pietroburgo:
-        - 155262  # Pskov
-        - 337422  # Pietroburgo
-        - 176095
-        - 89331 # Novograd Grande
-      Baltici: ["EE", "LT", "LV"]
-      Ucraina:
+      regioni:
         - 72634 # Odessa
         - 71022 # Cherson
         - 71236
@@ -85,39 +88,39 @@ maps:
         - 101746 # Dnipr
         - 101859 # Kirowhrad
         - 393980  # Karelia
+    territori:
+      Mosca:
+        - 1029256
+      "Finlandia\n&\nSan Pietroburgo":
+        - "FI"
+        - 176095
+        - 155262  # Pskov
+        - 337422  # Pietroburgo
+        - 89331 # Novograd Grande
+      "Paesi\nBaltici": ["EE", "LT", "LV"]
+      Ucraina:
+        - file://tmp-Ucraina.geojson
       Belarus:
         - BY  # 59065
       Polska:
         - file://poland-1914.geojson
-#        - 130914 #
-#        - 130935 # Warszawa
-#        - 130919  # Lublin
-#        - 224461 # Czestochowa
-#        - 224458 # Łodz
-#        - PL414
-#        - PL416
-#        - PL61
-#        - PL62
   Indipendenti:
     config:
       facecolor1: orange
       facecolor2: orange
-
     territori:
       Svizzera:
       - "CH"
       Portugal:
       - "PT"
-      Spain:
+      "España":
         - "ES"
       Denmark:
         - "DK"
-      Sweden:
+      Sverige:
         - "SE"
       Norway:
         - "NO"
-      Finland:
-        - "FI"
   Prussia:
     config:
       facecolor1: "#c37437"
@@ -125,6 +128,7 @@ maps:
     country-borders: germany-1914-boundaries.geojson #"data/geojson/germany-1914.geojson"
     territori:
       Prussia:
+        - 103906 # Konigsberg
         - PL41 # Pomerania
         - PL42
         #- PL415 # Posen
@@ -132,47 +136,45 @@ maps:
         #- PL411
         #- PL418
         - PL6 # Pomerania
-        - 103906 # Konigsberg
       Renania:
         - DE5
         - DE6
         - DK032
-        - DE9
+        - DE9 # Bassa Sassonia
         - DEA
         - DEF
         - DEB
+        - DEC # Saarland
       Berlino:
         - DE3
         - DE4
+        - DEG
+        - DE8 # Meclemburgo-Pomerania
+        - DEE # Sachsen-Anhalt
         - 130969
-        - DE8
       Bayern:
         - FRF33
         - FRF1
         - DE1
         - DE2
-      Slesia:
+        - DE7 # Hesse
+      "Sassonia\n& Slesia":
         - PL22 # Slesia
         - PL5 # Slesia
         - PL43
+        - DED # Sachsen
   Asburgici:
     config:
       facecolor1: '#d5c232'
       facecolor2: '#b3aa1b'
-
-    territori:
-      Wien:
-      - AT
-      - ITH1
-      - ITH2 # trentino alto adige
-      Istria:
-      - ITH43  # GO
-      - ITH44  # TS
-      - SI
-      - HR # istria
-      Boemia:
-      - CZ
-
+    regioni:
+      Ungheria:
+      - HU
+      - RO1
+      - RO42
+      - SK
+      - 72489 # Trans-carpazia UA
+      - RS12
       Galizia:
       - PL21
       - PL225
@@ -182,26 +184,40 @@ maps:
       - 72525 # Ternopil
       - 72526 # Chernivitsi UA
 
+    territori:
+      Wien:
+      - AT
+      - ITH1
+      - ITH2 # trentino alto adige
+      "Trieste &\nDalmazia":
+      - ITH43  # GO
+      - ITH44  # TS
+      - SI
+      - HR # istria
+      - BA
+
+      Boemia:
+      - CZ
+      Galizia:
+        - file://tmp-Galizia.geojson
       Ungheria:
-      - HU
-      - RO1
-      - RO42
-      - SK
-      - 72489 # Trans-carpazia UA
-      - RS12
+        - file://tmp-Ungheria.geojson
   Ottomano:
     config:
       facecolor1: "#76cfe7"
       facecolor2: "#2c97ba"
-
+    tmp:
+      Serbia:
+        - RS2
+        - RS11
+        - MK
+        - ME
+        - 2088990
     territori:
       Serbia:
-      - RS2
-      - RS11
-      - MK
-      - ME
-      - BA
-      - 2088990
+        - "file://tmp-Serbia.geojson"
+
+
       Albania:
       - AL
       Grecia:
@@ -226,18 +242,17 @@ maps:
     config:
       facecolor1: "#a676c9"
       facecolor2: "#6d1195"
-
     territori:
-      Occitanie:
+      "Aix en\n Provence":
         - FRJ # Occitanie
+        - FRK # Auvergne
+        - FRL # Auvergne
+        - FRM # Corsica
       Bretagne:
         - FRG # Pays de la Loire
         - FRD
         - FRH
-      Auvergne:
-        - FRK
-        - FRL
-      Netherland:
+      Amsterdam:
         - BE
         - NL
         - LU
@@ -256,25 +271,25 @@ maps:
       facecolor1: darkgreen
       facecolor2: green
     territori:
-      Piemonte:
+      "Torino":
       - ITC1
       - ITC2
       - ITC3
-      Lombardo Veneto:
-      - 'ITC4'
-      - 'ITH3'
+      "Venezia":
       - ITH42
       - ITH41
-      Sicilia e Sardegna:
-      - ITG2 # sardegna
-      - ITG1 # sicilia
-      Regno di Napoli:
-      -  ITF # regno di napoli
+      - 'ITC4'
+      - 'ITH3'
+      - ITH5 # Emilia
+
+      "Napoli":
+      - ITF # regno di napoli
       Roma:
       - ITI2
       - ITI3
       - ITI4
-      Granducati:
-      - ITH5 # Emilia
       - ITI1
+      "Sicilia & Sardegna":
+      - ITG2 # sardegna
+      - ITG1 # sicilia
 
