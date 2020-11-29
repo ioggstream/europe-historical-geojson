@@ -271,7 +271,7 @@ def render_board(countries=COUNTRIES, background=False):
     from functools import partial
 
     countries = countries or COUNTRIES
-    with Pool(processes=10) as pool:
+    with Pool(processes=20) as pool:
         pool.map(partial(render_state, ax=risk_board, plot_labels=False), countries)
         pool.map(partial(render_state, ax=label_board, plot_geo=False), countries)
         pool.map(partial(render_state, ax=full_board), countries)

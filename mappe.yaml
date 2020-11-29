@@ -64,7 +64,8 @@ maps:
       facecolor1: darkred
       facecolor2: red
     #country-borders: russian-empire-1914-boundaries.geojson
-      regioni:
+    regioni:
+        Ucraina:
         - 72634 # Odessa
         - 71022 # Cherson
         - 71236
@@ -88,15 +89,18 @@ maps:
         - 101746 # Dnipr
         - 101859 # Kirowhrad
         - 393980  # Karelia
-    territori:
-      Mosca:
-        - 1029256
-      "Finlandia\n&\nSan Pietroburgo":
-        - "FI"
+        Pietroburgo:
+        - 54224
+        - 393980
         - 176095
         - 155262  # Pskov
         - 337422  # Pietroburgo
         - 89331 # Novograd Grande
+    territori:
+      Mosca:
+        - 1029256
+      "Finlandia\n&\nSan Pietroburgo":
+        - file://tmp-Pietroburgo.geojson
       "Paesi\nBaltici": ["EE", "LT", "LV"]
       Ucraina:
         - file://tmp-Ucraina.geojson
