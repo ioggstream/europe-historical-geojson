@@ -34,13 +34,14 @@ jobs:
       - name: Run a script
         run: |-
           pip install pyyaml geopandas shapely matplotlib numpy pyproj requests_cache requests pandas contextily typing
-          echo "Ciao" > index.html
+          mkdir _build
+          echo "Ciao" > _build/index.html
           
       - name: Deploy to GitHub Pages
         if: success()
         uses: crazy-max/ghaction-github-pages@v2
         with:
           target_branch: gh-pages
-          build_dir: .
+          build_dir: _build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
