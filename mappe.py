@@ -45,11 +45,17 @@ MY_EPSG = 3003
 MY_EPSG = 2196
 MY_EPSG = 3395
 
-
+# Proiezione di Peters con aree riadattate.
 MY_CRS = pyproj.Proj(
     proj="cea", lon_0=0, lat_ts=45, x_0=0, y_0=0, ellps="WGS84", units="m"
 ).srs
 # MY_CRS = f'EPSG:{MY_EPSG}'
+
+
+def annotate_city(address):
+    coords = get_city_location(address)
+    map_coords = point_coords(*coords)
+    plt.annotate(text="◉", xy=map_coords, fontsize=24)  # address.split(',', 1)[0],
 
 
 def get_city_location(address):
@@ -58,6 +64,15 @@ def get_city_location(address):
     geolocator = Nominatim(user_agent="github.com/ioggstream")
     ret = geolocator.geocode(address)
     return ret.point.longitude, ret.point.latitude
+
+
+from shapely.geometry import Point
+
+
+def point_coords(x=24, y=41):
+    x = Point(x, y)
+    points = gpd.GeoDataFrame({"geometry": [x]}, crs="EPSG:4326").to_crs(MY_CRS)
+    return points.geometry[0].coords[:][0]
 
 
 def _get_europe():
@@ -187,8 +202,15 @@ def get_state_df(state_label) -> GeoDataFrame:
 
 
 def render(
-    gdfm, facecolor1="blue", facecolor2="blue", ax=None, plot_labels=True, plot_geo=True
+    gdfm,
+    facecolor1="blue",
+    facecolor2="blue",
+    ax=None,
+    plot_labels=True,
+    plot_geo=True,
+    cities=None,
 ):
+    cities = cities or []
     empire = gdfm
     epsg_projection = 3857
     my_crs = MY_CRS
@@ -223,6 +245,9 @@ def render(
             except:
                 pass
 
+    for city in cities:
+        annotate_city(city)
+
     # Limit the map to EU and convert to 3857 to improve printing.
     empire = gdfm.intersection(_get_europe())
     empire = empire.to_crs(my_crs)
@@ -250,8 +275,14 @@ def render_state(state_label, ax, plot_labels=True, plot_geo=True):
     state_area = get_state_df(state_label)
     state_config = maps()[state_label]
     color_config = state_config["config"]
+    cities = state_config.get("citta", [])
     render(
-        state_area, ax=ax, **color_config, plot_labels=plot_labels, plot_geo=plot_geo
+        state_area,
+        ax=ax,
+        **color_config,
+        plot_labels=plot_labels,
+        plot_geo=plot_geo,
+        cities=cities,
     )
     return state_area
 
