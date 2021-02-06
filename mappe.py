@@ -1,25 +1,27 @@
 import json
+import logging
+import time
 from io import StringIO
 from itertools import product
 from pathlib import Path
 from typing import List
-import time
+from urllib.parse import parse_qs, urlparse
+
 import geopandas as gpd
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import pyproj
 import requests_cache
 import yaml
+from contextily import add_basemap
 from geopandas import GeoDataFrame, GeoSeries
 from matplotlib import pyplot as plt
 from pandas import DataFrame
 from requests import get
 from requests_cache import CachedSession
-from shapely.geometry import MultiPolygon, Polygon
+from shapely.geometry import MultiPolygon, Polygon, mapping, shape
 from shapely.ops import cascaded_union
-from contextily import add_basemap
-import logging
-from shapely.geometry import shape, mapping
 
 log = logging.getLogger(__name__)
 requests_cache.install_cache("demo_cache")
@@ -43,12 +45,19 @@ MY_EPSG = 3003
 MY_EPSG = 2196
 MY_EPSG = 3395
 
-import pyproj
 
 MY_CRS = pyproj.Proj(
     proj="cea", lon_0=0, lat_ts=45, x_0=0, y_0=0, ellps="WGS84", units="m"
 ).srs
 # MY_CRS = f'EPSG:{MY_EPSG}'
+
+
+def get_city_location(address):
+    from geopy.geocoders import Nominatim
+
+    geolocator = Nominatim(user_agent="github.com/ioggstream")
+    ret = geolocator.geocode(address)
+    return ret.point.longitude, ret.point.latitude
 
 
 def _get_europe():
@@ -144,8 +153,11 @@ def get_area(label) -> GeoSeries:
 
 
 def join_areas(areas: List) -> GeoSeries:
+    tolerance = 0.04
     get_areas = [get_area(label) for label in areas if label]
-    ret = GeoSeries(cascaded_union([x.geometry[0] for x in get_areas if x is not None]))
+    ret = GeoSeries(
+        cascaded_union([x.geometry[0] for x in get_areas if x is not None])
+    ).simplify(tolerance=tolerance)
     return ret
 
 
@@ -273,7 +285,10 @@ def render_board(countries=COUNTRIES, background=False):
     countries = countries or COUNTRIES
     with Pool(processes=20) as pool:
         pool.map(partial(render_state, ax=risk_board, plot_labels=False), countries)
-        pool.map(partial(render_state, ax=label_board, plot_geo=False), countries)
+        pool.map(
+            partial(render_state, ax=label_board, plot_geo=False, plot_labels=True),
+            countries,
+        )
         pool.map(partial(render_state, ax=full_board), countries)
     pool.join()
     # add_basemap(full_board, crs=f"EPSG:{MY_EPSG}")
@@ -282,7 +297,7 @@ def render_board(countries=COUNTRIES, background=False):
     fig_full.savefig("/tmp/full-board.png", dpi=300, transparent=True)
 
 
-def unite_maps():
+def test_unite_maps():
     prussia = gpd.read_file(open("data/geojson/germany-1914.geojson"))
     de = get_area("DE")
     prussia.append(de)
@@ -297,9 +312,6 @@ def borderize(df, x):
     brd = df_x.geometry.exterior.unary_union
     poly = Polygon(shape(brd))
     GeoSeries(poly).to_file(f"tmp-{x}.geojson", driver="GeoJSON")
-
-
-from urllib.parse import parse_qs, urlparse
 
 
 def dump_cache():
