@@ -3,7 +3,7 @@ regions:
     - 223408
     - 103906
   Brandenburg:
-    - 130969 
+    - 130969
   Pomerania:
     - 130971 Poznan
     - 2406440
@@ -34,12 +34,21 @@ europe_borders: {
    }
   }
 
+constants:
+  small_city: &small_city
+    size: 12
+    icon: "●"
+
 
 maps:
   Regno Unito:
     config:
       facecolor1: darkblue
       facecolor2: blue
+    citta:
+      - address: London, UK
+      - address: Manchester, UK
+      - address: Dublin, Ireland
     territori:
       Scotland:
         - UKM
@@ -63,6 +72,10 @@ maps:
     config:
       facecolor1: darkred
       facecolor2: red
+    citta:
+      - address: Moskva, Russia
+      - address: Sankt Petersbourg, Russia
+      - address: Varsavia, Poland
     #country-borders: russian-empire-1914-boundaries.geojson
     regioni:
         Ucraina:
@@ -97,14 +110,14 @@ maps:
         - 337422  # Pietroburgo
         - 89331 # Novograd Grande
     territori:
-      Mosca:
+      Moskva:
         - 1029256
-      "Finlandia\n&\nSan Pietroburgo":
+      "Finlandia\n&\nSankt Peterburg":
         - file://tmp-Pietroburgo.geojson
       "Paesi\nBaltici": ["EE", "LT", "LV"]
-      Ucraina:
+      Ukraina:
         - file://tmp-Ucraina.geojson
-      Belarus:
+      Bielarus:
         - BY  # 59065
       Polska:
         - file://poland-1914.geojson
@@ -112,35 +125,77 @@ maps:
     config:
       facecolor1: orange
       facecolor2: orange
+    citta:
+      - address: Amsterdam, Netherlands
+        <<: *small_city
+      - address: Anversa, Belgium
+        <<: *small_city
+      - address: Barcelona, Spain
+        <<: *small_city
+      - address: Lisboa, Portugal
+        <<: *small_city
+      - address: Madrid, Spain
+        <<: *small_city
+      - address: Oslo, Norway
+        <<: *small_city
+      - address: Bergen, Norway
+        <<: *small_city
+      - address: Stockholm, Sweden
+        <<: *small_city
+      - address: Goteborg, Sweden
+        <<: *small_city
+      - address: Copenhagen, Denmark
+        <<: *small_city
+      - address: Coimbra, Portugal
+        <<: *small_city
+
+
+
     territori:
-      Svizzera:
-      - "CH"
+      # Svizzera:
+       #- "CH"
       Portugal:
       - "PT"
-      "España":
-        - "ES"
+      Catalunya:
+        - ES2
+        - ES5
+      Aragon:
+        - ES1
+        - ES3
+        - ES4
+        - ES6
+        - MA
       Denmark:
         - "DK"
       Sverige:
         - "SE"
       Norway:
         - "NO"
+      Benelux:
+        - BE
+        - NL
+        - LU
   Prussia:
     config:
       facecolor1: "#c37437"
       facecolor2: "#c54e25"
     country-borders: germany-1914-boundaries.geojson #"data/geojson/germany-1914.geojson"
     territori:
+      "Sassonia\n& Slesia":
+        - PL22 # Slesia
+        - PL5 # Slesia
+        - PL43
+        - DED # Sachsen
       Prussia:
         - 103906 # Konigsberg
+        - PL6 # Pomerania
         - PL41 # Pomerania
         - PL42
         #- PL415 # Posen
         #- PL417
         #- PL411
         #- PL418
-        - PL6 # Pomerania
-      Renania:
+      Rhine:
         - DE5
         - DE6
         - DK032
@@ -149,28 +204,27 @@ maps:
         - DEF
         - DEB
         - DEC # Saarland
-      Berlino:
+      Berlin:
         - DE3
         - DE4
         - DEG
         - DE8 # Meclemburgo-Pomerania
         - DEE # Sachsen-Anhalt
-        - 130969
+      #  - 130969 # Polonia
       Bayern:
         - FRF33
         - FRF1
         - DE1
         - DE2
         - DE7 # Hesse
-      "Sassonia\n& Slesia":
-        - PL22 # Slesia
-        - PL5 # Slesia
-        - PL43
-        - DED # Sachsen
   Asburgici:
     config:
       facecolor1: '#d5c232'
       facecolor2: '#b3aa1b'
+    citta:
+      - address: Wien, AT
+      - address: Budapest, HU
+      - address: Praha, CZ
     regioni:
       Ungheria:
       - HU
@@ -193,14 +247,13 @@ maps:
       - AT
       - ITH1
       - ITH2 # trentino alto adige
-      "Trieste &\nDalmazia":
+      "Trieste &\nDalmacija":
       - ITH43  # GO
       - ITH44  # TS
       - SI
       - HR # istria
       - BA
-
-      Boemia:
+      Bohemia:
       - CZ
       Galizia:
         - file://tmp-Galizia.geojson
@@ -217,14 +270,16 @@ maps:
         - MK
         - ME
         - 2088990
+    citta:
+      - address: Istanbul, Turchia
+      - address: Atene, Grecia
+      - address: Sofia, Bulgaria
     territori:
       Serbia:
         - "file://tmp-Serbia.geojson"
-
-
       Albania:
       - AL
-      Grecia:
+      "Grecia":
       - EL
       - TR1
       - TR21
@@ -234,7 +289,7 @@ maps:
       - RO2
       - RO3
       - RO41
-      Anatolia:
+      Turkiye:
         - TR22
         - TR3
         - TR4
@@ -246,6 +301,10 @@ maps:
     config:
       facecolor1: "#a676c9"
       facecolor2: "#6d1195"
+    citta:
+      - address: Paris, France
+      - address: Lille, France
+      - address: Marseille, France
     territori:
       "Aix en\n Provence":
         - FRJ # Occitanie
@@ -256,10 +315,6 @@ maps:
         - FRG # Pays de la Loire
         - FRD
         - FRH
-      Amsterdam:
-        - BE
-        - NL
-        - LU
       Bordeaux:
         - FRI
       Borgougne:
@@ -274,26 +329,47 @@ maps:
     config:
       facecolor1: darkgreen
       facecolor2: green
+    citta:
+      - address: Roma, Italy
+        size: 24
+        icon: "◉"
+      - address: Milano, Italy
+        size: 24
+        icon: "◉"
+      - address: Napoli, Italy
+        size: 24
+        icon: "◉"
     territori:
       "Torino":
       - ITC1
       - ITC2
       - ITC3
+      - 'ITC41'
+      - ITC48
       "Venezia":
-      - ITH42
       - ITH41
-      - 'ITC4'
+      - ITH42
+      - 'ITC42'
+      - 'ITC43'
+      - 'ITC44'
+      - 'ITC46'
+      - 'ITC47'
+      - 'ITC49'
+      - 'ITC4A'
+      - 'ITC4B'
+      - 'ITC4C'
+      - 'ITC4D'
       - 'ITH3'
       - ITH5 # Emilia
 
-      "Napoli":
+      "Napoli\n&\nSicilia":
       - ITF # regno di napoli
+      - ITG1 # sicilia
       Roma:
       - ITI2
       - ITI3
       - ITI4
       - ITI1
-      "Sicilia & Sardegna":
+      "Sardegna":
       - ITG2 # sardegna
-      - ITG1 # sicilia
 
