@@ -76,7 +76,7 @@ maps:
       - address: Moskva, Russia
       - address: Sankt Petersbourg, Russia
       - address: Varsavia, Poland
-    #country-borders: russian-empire-1914-boundaries.geojson
+    country-borders: urss.geojson
     regioni:
         Ucraina:
         - 72634 # Odessa
@@ -103,7 +103,8 @@ maps:
         - 101859 # Kirowhrad
         - 393980  # Karelia
         Pietroburgo:
-        - 54224
+        # - 54224  # Finland
+        - FI
         - 393980
         - 176095
         - 155262  # Pskov
@@ -113,7 +114,13 @@ maps:
       Moskva:
         - 1029256
       "Finlandia\n&\nSankt Peterburg":
-        - file://tmp-Pietroburgo.geojson
+      #  - file://tmp-Pietroburgo.geojson
+        - FI
+        - 393980  # Carelia
+        - 176095
+        - 155262  # Pskov
+        - 337422  # Pietroburgo
+        - 89331 # Novograd Grande
       "Paesi\nBaltici": ["EE", "LT", "LV"]
       Ukraina:
         - file://tmp-Ucraina.geojson

@@ -216,14 +216,14 @@ def get_state_df(state_label) -> GeoDataFrame:
     n, s = territori[0]
 
     df = DataFrame({"name": [n]})
-    ret = gpd.GeoDataFrame(df, geometry=s)
+    ret = gpd.GeoDataFrame(df, geometry=s, crs=MY_EPSG)
     for n, s in territori[1:]:
-        ret = ret.append(gpd.GeoDataFrame(DataFrame({"name": [n]}), geometry=s))
+        ret = ret.append(gpd.GeoDataFrame(DataFrame({"name": [n]}), geometry=s, crs=MY_EPSG))
 
     state_config = maps()[state_label]
     geo_config = state_config.get("country-borders")
     if geo_config:
-        borders = gpd.read_file(open(geo_config)).to_crs(epsg=4326)
+        borders = gpd.read_file(open(geo_config)).set_crs(epsg=4326).unary_union
         ret.geometry = ret.geometry.intersection(borders)
 
     ret = ret.set_crs("EPSG:4326")
@@ -237,6 +237,7 @@ def render(
     ax=None,
     plot_labels=True,
     plot_geo=True,
+    plot_cities=True,
     cities=None,
 ):
     cities = cities or []
@@ -272,8 +273,9 @@ def render(
             except:
                 raise
 
-    for city in cities:
-        annotate_city(**city)
+    if plot_cities:
+        for city in cities:
+            annotate_city(**city)
 
     # Limit the map to EU and convert to 3857 to improve printing.
     empire = gdfm.intersection(_get_europe())
@@ -292,7 +294,7 @@ def render(
     return empire
 
 
-def render_state(state_label, ax, plot_labels=True, plot_geo=True):
+def render_state(state_label, ax, plot_labels=True, plot_geo=True, plot_cities=True):
     state_area = get_state_df(state_label)
     state_config = maps()[state_label]
     color_config = state_config["config"]
@@ -302,6 +304,7 @@ def render_state(state_label, ax, plot_labels=True, plot_geo=True):
         ax=ax,
         plot_labels=plot_labels,
         plot_geo=plot_geo,
+        plot_cities=plot_cities,
         cities=cities,
         **color_config,
     )
@@ -312,11 +315,21 @@ def test_render_labels():
     fig_label, label_board = get_board()
     with Pool(processes=20) as pool:
         pool.map(
-            partial(render_state, ax=label_board, plot_geo=False, plot_labels=True),
+            partial(render_state, ax=label_board, plot_geo=False, plot_labels=True, plot_cities=False),
             COUNTRIES,
         )
     # render_state(state_label="Italia", ax=label_board, plot_geo=False, plot_labels=True)
     fig_label.savefig("label-board.png", dpi=300, transparent=True)
+
+
+def test_render_cities():
+    fig_label, label_board = get_board()
+    with Pool(processes=20) as pool:
+        pool.map(
+            partial(render_state, ax=label_board, plot_geo=False, plot_labels=False, plot_cities=True),
+            COUNTRIES,
+        )
+    fig_label.savefig("cities-board.png", dpi=300, transparent=True)
 
 
 def render_board(countries=COUNTRIES, background=False):
@@ -329,15 +342,12 @@ def render_board(countries=COUNTRIES, background=False):
 
     countries = countries or COUNTRIES
     with Pool(processes=20) as pool:
-        # pool.map(partial(render_state, ax=risk_board, plot_labels=False), countries)
-        pool.map(
-            partial(render_state, ax=label_board, plot_geo=False, plot_labels=True),
-            countries,
-        )
+        pool.map(partial(render_state, ax=risk_board, plot_labels=False), countries)
+        # pool.map(partial(render_state, ax=label_board, plot_geo=False, plot_labels=True), countries,)
         # pool.map(partial(render_state, ax=full_board), countries)
-    pool.join()
+
     # add_basemap(full_board, crs=MY_EPSG)
-    # fig.savefig("/tmp/risk-board.png", dpi=300, transparent=True)
+    fig.savefig("/tmp/risk-board.png", dpi=300, transparent=True)
     fig_label.savefig("/tmp/label-board.png", dpi=300, transparent=True)
     # fig_full.savefig("/tmp/full-board.png", dpi=300, transparent=True)
 
