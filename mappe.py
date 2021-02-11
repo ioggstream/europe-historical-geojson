@@ -42,8 +42,6 @@ COUNTRIES = (
     "Prussia",
     "Russia",
 )
-
-# COUNTRIES = ("Italia",)
 MY_EPSG = 3003
 MY_EPSG = 2196
 MY_EPSG = 3395
@@ -55,12 +53,11 @@ MY_EPSG = "EPSG:4326"
 MY_CRS = pyproj.Proj(
     proj="cea", lon_0=0, lat_ts=45, x_0=0, y_0=0, ellps="WGS84", units="m"
 ).srs
-# MY_CRS = f'EPSG:{MY_EPSG}'
 
 LARGE_CITY = "◉"
 
 
-def annotate_city(address, icon=LARGE_CITY, size=12):
+def annotate_city(address, icon=LARGE_CITY, size=24):
     coords = get_city_location(address)
     if not coords:
         log.error(f"Cannot find location: {address}, skipping")
@@ -117,16 +114,26 @@ def get_area(label) -> GeoSeries:
     else:
         return None
         # raise ValueError(f"Can't find polygons for {label}")
-    return gpd.read_file(polygons)
+    # scale borders to simplify intersections.
+    ret = gpd.read_file(polygons)
+    if label == "FI":
+        ret = ret.scale(xfact=1.1, yfact=1.1)
+    return ret
 
 
 def join_areas(areas: List) -> GeoSeries:
-    tolerance = 0.04
-    get_areas = [get_area(label) for label in areas if label]
-    ret = GeoSeries(
-        cascaded_union([x.geometry[0] for x in get_areas if x is not None])
-    ).simplify(tolerance=tolerance)
-    return ret
+    for tolerance in (0.02,):
+        try:
+            get_areas = [get_area(label) for label in areas if label]
+            ret = GeoSeries(
+                cascaded_union([x.geometry[0] for x in get_areas if x is not None])
+            ).simplify(tolerance=tolerance)
+            # .scale(xfact=0.9, yfact=0.9)
+            return ret
+        except:
+            raise
+            # pass
+    raise ValueError("Tolerance too high to", tolerance)
 
 
 def filter_noise(shape: MultiPolygon):
@@ -174,7 +181,7 @@ def get_polygons(label, retry=0):
     osm_fr = "http://polygons.openstreetmap.fr"
     osm_tw = "https://api06.dev.openstreetmap.org"
     base = "https://gisco-services.ec.europa.eu/distribution/v2"
-    log.warning("Retrieving %r", label)
+    log.info("Retrieving %r", label)
 
     if str(label).isdigit():
         u = f"{osm_fr}/get_geojson.py?id={label}&params=0"
@@ -185,7 +192,7 @@ def get_polygons(label, retry=0):
             requests_cache.core.get_cache().delete_url(u)
             get(f"http://polygons.openstreetmap.fr/?id={label}")
         res = get(u, proxies={"http": "socks5://localhost:11111"})
-        log.warning("Request from cache: %r %r", u, res.from_cache)
+        log.info("Request from cache: %r %r", u, res.from_cache)
         if res.content:
             return res.content.decode()
         return "{}"
@@ -218,15 +225,19 @@ def get_state_df(state_label) -> GeoDataFrame:
     df = DataFrame({"name": [n]})
     ret = gpd.GeoDataFrame(df, geometry=s, crs=MY_EPSG)
     for n, s in territori[1:]:
-        ret = ret.append(gpd.GeoDataFrame(DataFrame({"name": [n]}), geometry=s, crs=MY_EPSG))
+        ret = ret.append(
+            gpd.GeoDataFrame(DataFrame({"name": [n]}), geometry=s, crs=MY_EPSG)
+        )
 
     state_config = maps()[state_label]
     geo_config = state_config.get("country-borders")
     if geo_config:
         borders = gpd.read_file(open(geo_config)).set_crs(epsg=4326).unary_union
         ret.geometry = ret.geometry.intersection(borders)
-
-    ret = ret.set_crs("EPSG:4326")
+    translate = state_config.get("translate", [0, 0])
+    scale = state_config.get("scale", [1.0, 1.0])
+    ret = ret.set_crs(MY_EPSG)
+    ret.geometry = ret.geometry.translate(*translate).scale(*scale)
     return ret
 
 
@@ -315,7 +326,13 @@ def test_render_labels():
     fig_label, label_board = get_board()
     with Pool(processes=20) as pool:
         pool.map(
-            partial(render_state, ax=label_board, plot_geo=False, plot_labels=True, plot_cities=False),
+            partial(
+                render_state,
+                ax=label_board,
+                plot_geo=False,
+                plot_labels=True,
+                plot_cities=False,
+            ),
             COUNTRIES,
         )
     # render_state(state_label="Italia", ax=label_board, plot_geo=False, plot_labels=True)
@@ -326,7 +343,13 @@ def test_render_cities():
     fig_label, label_board = get_board()
     with Pool(processes=20) as pool:
         pool.map(
-            partial(render_state, ax=label_board, plot_geo=False, plot_labels=False, plot_cities=True),
+            partial(
+                render_state,
+                ax=label_board,
+                plot_geo=False,
+                plot_labels=False,
+                plot_cities=True,
+            ),
             COUNTRIES,
         )
     fig_label.savefig("cities-board.png", dpi=300, transparent=True)

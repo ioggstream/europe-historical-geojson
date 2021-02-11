@@ -45,6 +45,9 @@ maps:
     config:
       facecolor1: darkblue
       facecolor2: blue
+    translate:
+      - -1.0
+      - 2.0
     citta:
       - address: London, UK
       - address: Manchester, UK
@@ -73,7 +76,7 @@ maps:
       facecolor1: darkred
       facecolor2: red
     citta:
-      - address: Moskva, Russia
+      - address: Mosca, Russia
       - address: Sankt Petersbourg, Russia
       - address: Varsavia, Poland
     country-borders: urss.geojson
