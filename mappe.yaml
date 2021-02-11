@@ -158,9 +158,14 @@ maps:
         <<: *small_city
       - address: Coimbra, Portugal
         <<: *small_city
-
-
-
+      - address: Firenze, Italia
+        <<: *small_city
+      - address: Venezia, Italia
+        <<: *small_city
+      - address: Bologna, Italia
+        <<: *small_city
+      - address: Torino, Italia
+        <<: *small_city
     territori:
       # Svizzera:
        #- "CH"

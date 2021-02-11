@@ -380,6 +380,7 @@ def get_board():
     plt.tight_layout(pad=1)
     fig.set_size_inches(cm2inch(29 * 2, 21 * 2), forward=True)
     fig.set_dpi(300)
+    risk_board.set_axis_off()
     return fig, risk_board
 
 
