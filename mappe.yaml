@@ -358,6 +358,10 @@ maps:
       - address: Napoli, Italy
         size: 24
         icon: "◉"
+      - address: Firenze, Italy
+        <<: *small_city
+      - address: Bologna, Italy
+        <<: *small_city
     territori:
       "Torino":
       - ITC1

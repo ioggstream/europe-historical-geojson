@@ -57,15 +57,23 @@ MY_CRS = pyproj.Proj(
 LARGE_CITY = "◉"
 
 
-def annotate_city(address, icon=LARGE_CITY, size=24):
+def annotate_city(address, icon=LARGE_CITY, size=24, state_label=None):
+    translate = (0, 0)
     coords = get_city_location(address)
     if not coords:
         log.error(f"Cannot find location: {address}, skipping")
         return None
+
+    if state_label:
+        state_config = maps()[state_label]
+        translate = state_config.get("translate", [0, 0])
+
+    coords = np.array(coords)
+    coords += np.array(translate)
     map_coords = point_coords(*coords)
     adjust = [-1863.686871749116, -252.13592858798802]
     map_coords = tuple(map(add, map_coords, adjust))
-    plt.annotate(text=icon, xy=map_coords, fontsize=size)  # address.split(',', 1)[0],
+    plt.annotate(text=icon, xy=map_coords, fontsize=size)
 
 
 def get_city_location(address):
@@ -222,7 +230,7 @@ def get_state_df(state_label) -> GeoDataFrame:
     territori = list(get_state(state_label).items())
     n, s = territori[0]
 
-    df = DataFrame({"name": [n]})
+    df = DataFrame({"name": [n], "state": [state_label]})
     ret = gpd.GeoDataFrame(df, geometry=s, crs=MY_EPSG)
     for n, s in territori[1:]:
         ret = ret.append(
@@ -230,12 +238,13 @@ def get_state_df(state_label) -> GeoDataFrame:
         )
 
     state_config = maps()[state_label]
+    translate = state_config.get("translate", [0, 0])
+    scale = state_config.get("scale", [1.0, 1.0])
     geo_config = state_config.get("country-borders")
     if geo_config:
         borders = gpd.read_file(open(geo_config)).set_crs(epsg=4326).unary_union
         ret.geometry = ret.geometry.intersection(borders)
-    translate = state_config.get("translate", [0, 0])
-    scale = state_config.get("scale", [1.0, 1.0])
+
     ret = ret.set_crs(MY_EPSG)
     ret.geometry = ret.geometry.translate(*translate).scale(*scale)
     return ret
@@ -255,6 +264,8 @@ def render(
     empire = gdfm
     my_crs = MY_CRS
 
+    state_label = gdfm.state.values[0]
+
     for region_name in empire.name:
         region = empire[empire.name == region_name]
         # print(region, region_name)
@@ -270,9 +281,10 @@ def render(
                     .representative_point()
                 )
                 for p in points:
+                    x, y = p.coords[:][0]
                     plt.annotate(
                         text=region_name,
-                        xy=p.coords[:][0],
+                        xy=(x, y),
                         horizontalalignment="center",
                         verticalalignment="center",
                         fontsize=14,
@@ -286,7 +298,7 @@ def render(
 
     if plot_cities:
         for city in cities:
-            annotate_city(**city)
+            annotate_city(**city, state_label=state_label)
 
     # Limit the map to EU and convert to 3857 to improve printing.
     empire = gdfm.intersection(_get_europe())
@@ -295,13 +307,14 @@ def render(
     # Draw borders with different colors.
     if plot_geo:
         empire.plot(
-            ax=ax, edgecolor="black", facecolor=facecolor2, linewidth=5, alpha=0.7
+            ax=ax, edgecolor="black", facecolor=facecolor2, linewidth=5, alpha=1.0
         )
         empire.plot(
             ax=ax, edgecolor="black", facecolor=facecolor1, linewidth=0, alpha=0.5
         )
     else:
         empire.plot(ax=ax, edgecolor="black", facecolor="none", linewidth=0, alpha=1)
+
     return empire
 
 
@@ -320,6 +333,11 @@ def render_state(state_label, ax, plot_labels=True, plot_geo=True, plot_cities=T
         **color_config,
     )
     return state_area
+
+
+def test_render_state():
+    fig, ax = get_board()
+    render_state("Italia", ax=ax)
 
 
 def test_render_labels():
