@@ -348,6 +348,9 @@ maps:
     config:
       facecolor1: darkgreen
       facecolor2: green
+    translate:
+      - 0.0
+      - 0.0
     citta:
       - address: Roma, Italy
         size: 24
