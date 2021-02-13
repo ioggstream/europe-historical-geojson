@@ -31,7 +31,7 @@ requests_cache.install_cache("demo_cache")
 
 config = lambda: yaml.safe_load(Path("mappe.yaml").read_text())
 maps = lambda: config()["maps"]
-
+seas = lambda: config()["seas"]
 COUNTRIES = (
     "Italia",
     "France",
@@ -42,6 +42,7 @@ COUNTRIES = (
     "Prussia",
     "Russia",
 )
+COUNTRIES = tuple(maps().keys())
 MY_EPSG = 3003
 MY_EPSG = 2196
 MY_EPSG = 3395
@@ -57,7 +58,7 @@ MY_CRS = pyproj.Proj(
 LARGE_CITY = "◉"
 
 
-def annotate_city(address, icon=LARGE_CITY, size=24, state_label=None):
+def annotate_city(address, text=LARGE_CITY, size=24, state_label=None):
     translate = (0, 0)
     coords = get_city_location(address)
     if not coords:
@@ -73,7 +74,7 @@ def annotate_city(address, icon=LARGE_CITY, size=24, state_label=None):
     map_coords = point_coords(*coords)
     adjust = [-1863.686871749116, -252.13592858798802]
     map_coords = tuple(map(add, map_coords, adjust))
-    plt.annotate(text=icon, xy=map_coords, fontsize=size)
+    plt.annotate(text=text, xy=map_coords, fontsize=size)
 
 
 def get_city_location(address):
@@ -86,6 +87,11 @@ def get_city_location(address):
     except Exception as e:
         log.exception("Error reading %r", e)
         return None
+
+
+def test_city_location_sea():
+    coords = get_city_location("Mare adriatico")
+    raise NotImplementedError
 
 
 def point_coords(x=24, y=41, crs=MY_EPSG):
@@ -266,6 +272,24 @@ def render(
 
     state_label = gdfm.state.values[0]
 
+    if plot_labels:
+        empire_center = (
+            empire.intersection(_get_europe())
+            .to_crs(my_crs)
+            .unary_union.representative_point()
+            .coords[:][0]
+        )
+        plt.annotate(
+            text=state_label,
+            xy=empire_center,
+            horizontalalignment="center",
+            verticalalignment="center",
+            fontsize=48,
+            color="white",
+            fontname="eufm10",
+            alpha=0.7,  # Gotico
+        )
+
     for region_name in empire.name:
         region = empire[empire.name == region_name]
         # print(region, region_name)
@@ -287,11 +311,14 @@ def render(
                         xy=(x, y),
                         horizontalalignment="center",
                         verticalalignment="center",
-                        fontsize=14,
+                        # fontsize=14,
+                        # color="white",
+                        # fontname="eufm10",  # Gotico
+                        # fontname="URW Bookman",
+                        fontname="Roboto",
+                        color="black",
+                        fontsize=16,
                         # fontstyle="italic",
-                        color="white",
-                        fontname="eufm10",
-                        #                    fontname="URW Bookman",
                     )
             except:
                 raise
@@ -373,6 +400,11 @@ def test_render_cities():
     fig_label.savefig("cities-board.png", dpi=300, transparent=True)
 
 
+def render_seas(ax=None):
+    for s in seas():
+        annotate_city(s, text=s)
+
+
 def render_board(countries=COUNTRIES, background=False):
     fig, risk_board = get_board()
     fig_label, label_board = get_board()
@@ -385,12 +417,13 @@ def render_board(countries=COUNTRIES, background=False):
     with Pool(processes=20) as pool:
         pool.map(partial(render_state, ax=risk_board, plot_labels=False), countries)
         # pool.map(partial(render_state, ax=label_board, plot_geo=False, plot_labels=True), countries,)
-        # pool.map(partial(render_state, ax=full_board), countries)
+        pool.map(partial(render_state, ax=full_board), countries)
 
+    render_seas(ax=full_board)
     # add_basemap(full_board, crs=MY_EPSG)
     fig.savefig("/tmp/risk-board.png", dpi=300, transparent=True)
     fig_label.savefig("/tmp/label-board.png", dpi=300, transparent=True)
-    # fig_full.savefig("/tmp/full-board.png", dpi=300, transparent=True)
+    fig_full.savefig("/tmp/full-board.png", dpi=300, transparent=True)
 
 
 def get_board():

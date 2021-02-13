@@ -116,7 +116,7 @@ maps:
     territori:
       Moskva:
         - 1029256
-      "Finlandia\n&\nSankt Peterburg":
+      "Finland\n&\nSankt Peterburg":
       #  - file://tmp-Pietroburgo.geojson
         - FI
         - 393980  # Carelia
@@ -190,6 +190,8 @@ maps:
         - BE
         - NL
         - LU
+      Serbia:
+        - "file://tmp-Serbia.geojson"
   Prussia:
     citta:
     - address: Berlino, Germania
@@ -278,7 +280,7 @@ maps:
         - file://tmp-Galizia.geojson
       Ungheria:
         - file://tmp-Ungheria.geojson
-  Ottomano:
+  "Impero\nOttomano":
     config:
       facecolor1: "#76cfe7"
       facecolor2: "#2c97ba"
@@ -294,28 +296,29 @@ maps:
       - address: Atene, Grecia
       - address: Sofia, Bulgaria
     territori:
-      Serbia:
-        - "file://tmp-Serbia.geojson"
+
       Albania:
       - AL
       "Grecia":
       - EL
-      - TR1
-      - TR21
+      # - EL3 - EL4 - EL6 - EL52 - EL53 - EL54
       Bulgaria:
       - BG
+      # - EL51  # Per giocabilità lasciamo i confini attuali della Grecia.
       Romania:
       - RO2
       - RO3
       - RO41
       Turkiye:
-        - TR22
-        - TR3
-        - TR4
-        - TR5
-        - TR6
-        - TR7
-        - TR8
+      - TR1
+      - TR21 # Tracia
+      - TR22
+      - TR3
+      - TR4
+      - TR5
+      - TR6
+      - TR7
+      - TR8
   France:
     config:
       facecolor1: "#a676c9"
@@ -354,13 +357,13 @@ maps:
     citta:
       - address: Roma, Italy
         size: 24
-        icon: "◉"
+        text: "◉"
       - address: Milano, Italy
         size: 24
-        icon: "◉"
+        text: "◉"
       - address: Napoli, Italy
         size: 24
-        icon: "◉"
+        text: "◉"
       - address: Firenze, Italy
         <<: *small_city
       - address: Bologna, Italy
