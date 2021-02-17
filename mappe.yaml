@@ -37,13 +37,25 @@ europe_borders: {
 constants:
   small_city: &small_city
     size: 12
-    icon: "●"
+    text: "●"
 
-
+seas:
+  - Mare Adriatico
+  - Mar Mediterraneo
+  - Mar Tirreno
+  - Mar Baltico
+  - Oceano Atlantico
+  - Mar Egeo
+  - Mar Ligure
+  - Mare del Nord
+  - Mar Nero
+  - Mar Ionio
+  - Golfo di Biscaglia
+  - Stretto di Gibilterra
 maps:
-  Regno Unito:
+  "United\nKingdom":
     config:
-      facecolor1: darkblue
+      facecolor1: blue
       facecolor2: blue
     translate:
       - -1.0
@@ -192,7 +204,7 @@ maps:
         - LU
       Serbia:
         - "file://tmp-Serbia.geojson"
-  Prussia:
+  "Deutschland":
     citta:
     - address: Berlino, Germania
     - address: Amburgo, Germania
@@ -202,12 +214,12 @@ maps:
       facecolor2: "#c54e25"
     country-borders: germany-1914-boundaries.geojson #"data/geojson/germany-1914.geojson"
     territori:
-      "Sassonia\n& Slesia":
+      "Sachsen":
         - PL22 # Slesia
         - PL5 # Slesia
         - PL43
         - DED # Sachsen
-      Prussia:
+      "Preußen":
         - 103906 # Konigsberg
         - PL6 # Pomerania
         - PL41 # Pomerania
@@ -246,6 +258,18 @@ maps:
       - address: Wien, AT
       - address: Budapest, HU
       - address: Praha, CZ
+      - address: Cracovia, PL
+        <<: *small_city
+      - address: Leopoli, UA
+        <<: *small_city
+      - address: Bolzano, IT
+        <<: *small_city
+      - address: Trieste, IT
+        <<: *small_city
+      - address: Bratislava, SK
+        <<: *small_city
+      - address: Sarajevo, BH
+        <<: *small_city
     regioni:
       Ungheria:
       - HU

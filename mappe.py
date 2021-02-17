@@ -32,21 +32,11 @@ requests_cache.install_cache("demo_cache")
 config = lambda: yaml.safe_load(Path("mappe.yaml").read_text())
 maps = lambda: config()["maps"]
 seas = lambda: config()["seas"]
-COUNTRIES = (
-    "Italia",
-    "France",
-    "Asburgici",
-    "Ottomano",
-    "Regno Unito",
-    "Indipendenti",
-    "Prussia",
-    "Russia",
-)
+
 COUNTRIES = tuple(maps().keys())
 MY_EPSG = 3003
 MY_EPSG = 2196
 MY_EPSG = 3395
-MY_EPSG = f"EPSG:{MY_EPSG}"
 MY_EPSG = "EPSG:4326"
 
 
@@ -264,6 +254,8 @@ def render(
     plot_labels=True,
     plot_geo=True,
     plot_cities=True,
+    plot_state_labels=True,
+    plot_state_labels_only=False,
     cities=None,
 ):
     cities = cities or []
@@ -272,7 +264,7 @@ def render(
 
     state_label = gdfm.state.values[0]
 
-    if plot_labels:
+    if plot_state_labels:
         empire_center = (
             empire.intersection(_get_europe())
             .to_crs(my_crs)
@@ -286,13 +278,15 @@ def render(
             verticalalignment="center",
             fontsize=48,
             color="white",
-            fontname="eufm10",
-            alpha=0.7,  # Gotico
+            fontname="eufm10",  # Gotico
+            alpha=0.7,
         )
+        if plot_state_labels_only:
+            plot_cities = False
+            plot_labels = False
 
     for region_name in empire.name:
         region = empire[empire.name == region_name]
-        # print(region, region_name)
 
         togli_isolette(region, 0.4)
         empire[empire.name == region_name] = region
@@ -345,7 +339,7 @@ def render(
     return empire
 
 
-def render_state(state_label, ax, plot_labels=True, plot_geo=True, plot_cities=True):
+def render_state(state_label, ax, plot_labels=True, plot_geo=True, plot_cities=True, **kwargs):
     state_area = get_state_df(state_label)
     state_config = maps()[state_label]
     color_config = state_config["config"]
@@ -358,6 +352,7 @@ def render_state(state_label, ax, plot_labels=True, plot_geo=True, plot_cities=T
         plot_cities=plot_cities,
         cities=cities,
         **color_config,
+        **kwargs
     )
     return state_area
 
@@ -377,11 +372,12 @@ def test_render_labels():
                 plot_geo=False,
                 plot_labels=True,
                 plot_cities=False,
+                plot_state_labels=False,
             ),
             COUNTRIES,
         )
     # render_state(state_label="Italia", ax=label_board, plot_geo=False, plot_labels=True)
-    fig_label.savefig("label-board.png", dpi=300, transparent=True)
+    fig_label.savefig("label-board.eps", dpi=300, transparent=True, format="eps")
 
 
 def test_render_cities():
@@ -394,10 +390,29 @@ def test_render_cities():
                 plot_geo=False,
                 plot_labels=False,
                 plot_cities=True,
+                plot_state_labels=False,
             ),
             COUNTRIES,
         )
-    fig_label.savefig("cities-board.png", dpi=300, transparent=True)
+    fig_label.savefig("cities-board.eps", dpi=300, transparent=True, format="eps")
+
+
+def test_render_state_labels():
+    fig_label, label_board = get_board()
+    with Pool(processes=20) as pool:
+        pool.map(
+            partial(
+                render_state,
+                ax=label_board,
+                plot_geo=False,
+                plot_labels=False,
+                plot_cities=False,
+                plot_state_labels=True,
+                plot_state_labels_only=True
+            ),
+            COUNTRIES,
+        )
+    fig_label.savefig("state_labels-board.eps", dpi=300, transparent=True, format="eps")
 
 
 def render_seas(ax=None):
