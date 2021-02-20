@@ -26,6 +26,8 @@ from requests_cache import CachedSession
 from shapely.geometry import MultiPolygon, Point, Polygon, mapping, shape
 from shapely.ops import cascaded_union
 
+matplotlib.rcParams["pdf.fonttype"] = 42
+
 log = logging.getLogger(__name__)
 requests_cache.install_cache("demo_cache")
 
@@ -45,7 +47,7 @@ MY_CRS = pyproj.Proj(
     proj="cea", lon_0=0, lat_ts=45, x_0=0, y_0=0, ellps="WGS84", units="m"
 ).srs
 
-LARGE_CITY = "◉"
+LARGE_CITY = "\u2299"  # "◉"
 
 
 def annotate_city(address, text=LARGE_CITY, size=24, state_label=None):
@@ -64,7 +66,7 @@ def annotate_city(address, text=LARGE_CITY, size=24, state_label=None):
     map_coords = point_coords(*coords)
     adjust = [-1863.686871749116, -252.13592858798802]
     map_coords = tuple(map(add, map_coords, adjust))
-    plt.annotate(text=text, xy=map_coords, fontsize=size)
+    plt.annotate(text=text, xy=map_coords, fontsize=size, fontname="DejaVu Serif")
 
 
 def get_city_location(address):
@@ -328,7 +330,7 @@ def render(
     # Draw borders with different colors.
     if plot_geo:
         empire.plot(
-            ax=ax, edgecolor="black", facecolor=facecolor2, linewidth=5, alpha=1.0
+            ax=ax, edgecolor="black", facecolor=facecolor2, linewidth=2, alpha=1.0
         )
         empire.plot(
             ax=ax, edgecolor="black", facecolor=facecolor1, linewidth=0, alpha=0.5
@@ -339,7 +341,9 @@ def render(
     return empire
 
 
-def render_state(state_label, ax, plot_labels=True, plot_geo=True, plot_cities=True, **kwargs):
+def render_state(
+    state_label, ax, plot_labels=True, plot_geo=True, plot_cities=True, **kwargs
+):
     state_area = get_state_df(state_label)
     state_config = maps()[state_label]
     color_config = state_config["config"]
@@ -352,7 +356,7 @@ def render_state(state_label, ax, plot_labels=True, plot_geo=True, plot_cities=T
         plot_cities=plot_cities,
         cities=cities,
         **color_config,
-        **kwargs
+        **kwargs,
     )
     return state_area
 
@@ -408,7 +412,7 @@ def test_render_state_labels():
                 plot_labels=False,
                 plot_cities=False,
                 plot_state_labels=True,
-                plot_state_labels_only=True
+                plot_state_labels_only=True,
             ),
             COUNTRIES,
         )
