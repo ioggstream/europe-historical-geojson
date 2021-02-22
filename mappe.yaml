@@ -35,6 +35,9 @@ europe_borders: {
   }
 
 constants:
+  large_city: &large_city
+    size: 24
+    text: "\u2299"
   small_city: &small_city
     size: 12
     text: "●"
@@ -53,7 +56,7 @@ seas:
   - Golfo di Biscaglia
   - Stretto di Gibilterra
 maps:
-  "United\nKingdom":
+  "UnitedKingdom":
     config:
       facecolor1: blue
       facecolor2: blue
@@ -170,14 +173,7 @@ maps:
         <<: *small_city
       - address: Coimbra, Portugal
         <<: *small_city
-      - address: Firenze, Italia
-        <<: *small_city
-      - address: Venezia, Italia
-        <<: *small_city
-      - address: Bologna, Italia
-        <<: *small_city
-      - address: Torino, Italia
-        <<: *small_city
+
     territori:
       # Svizzera:
        #- "CH"
@@ -208,27 +204,48 @@ maps:
     citta:
     - address: Berlino, Germania
     - address: Amburgo, Germania
-    - address: Monaco di baviera, Germania 
+    - address: Monaco di baviera, Germania
+    - address: Norimberga, Germania
+      <<: *small_city
+    - address: Lipsia, Germania
+      <<: *small_city
+    - address: Hannover, Germania
+      <<: *small_city
+    - address: Kassel, Germania
+      <<: *small_city
+    - address: Bielefeld, Germania
+      <<: *small_city
+    - address: Brema, Germania
+      <<: *small_city
+    - address: Flensburgo, Germania
+      <<: *small_city
+    - address: Lubecca, Germania
+      <<: *small_city
+    - address: Dresda, Germania
+      <<: *small_city
     config:
       facecolor1: "#c37437"
       facecolor2: "#c54e25"
     country-borders: germany-1914-boundaries.geojson #"data/geojson/germany-1914.geojson"
     territori:
-      "Sachsen":
-        - PL22 # Slesia
-        - PL5 # Slesia
-        - PL43
-        - DED # Sachsen
-      "Preußen":
+      "Bayern - Baviera":
+        - FRF33
+        - FRF1
+        - DE1
+        - DE2
+        - DE7 # Hesse
+      "Preußen - Prussia":
         - 103906 # Konigsberg
         - PL6 # Pomerania
         - PL41 # Pomerania
         - PL42
-        #- PL415 # Posen
-        #- PL417
-        #- PL411
-        #- PL418
-      Rhine:
+        #- PL415 # Posen #- PL417 #- PL411 #- PL418
+      "Sachsen - Sassonia":
+        - PL22 # Slesia
+        - PL5 # Slesia
+        - PL43
+        - DED # Sachsen
+      "Rhine - Renania":
         - DE5
         - DE6
         - DK032
@@ -244,12 +261,6 @@ maps:
         - DE8 # Meclemburgo-Pomerania
         - DEE # Sachsen-Anhalt
       #  - 130969 # Polonia
-      Bayern:
-        - FRF33
-        - FRF1
-        - DE1
-        - DE2
-        - DE7 # Hesse
   Asburgici:
     config:
       facecolor1: '#d5c232'
@@ -270,6 +281,19 @@ maps:
         <<: *small_city
       - address: Sarajevo, BH
         <<: *small_city
+      - address: Wroclaw, PL
+        <<: *small_city
+      - address: Czestochowa, PL
+        <<: *small_city
+      - address: KraKòw, PL
+        <<: *small_city
+      - address: Katowice, PL
+        <<: *small_city
+      - address: Ostrava, PL
+        <<: *small_city
+      - address: Brno, CZ
+        <<: *small_city
+
     regioni:
       Ungheria:
       - HU
@@ -304,7 +328,7 @@ maps:
         - file://tmp-Galizia.geojson
       Ungheria:
         - file://tmp-Ungheria.geojson
-  "Impero\nOttomano":
+  "Ottomano":
     config:
       facecolor1: "#76cfe7"
       facecolor2: "#2c97ba"
@@ -324,11 +348,16 @@ maps:
       Albania:
       - AL
       "Grecia":
-      - EL
-      # - EL3 - EL4 - EL6 - EL52 - EL53 - EL54
+     # - EL
+      - EL3
+      - EL4
+      - EL6
+      - EL52
+      - EL53
+      - EL54
       Bulgaria:
-      - BG
-      # - EL51  # Per giocabilità lasciamo i confini attuali della Grecia.
+       - BG
+       - EL51  # Per giocabilità lasciamo i confini attuali della Grecia.
       Romania:
       - RO2
       - RO3
@@ -337,12 +366,13 @@ maps:
       - TR1
       - TR21 # Tracia
       - TR22
-      - TR3
       - TR4
+      - TR8
+      Antalia:
+      - TR3
       - TR5
       - TR6
       - TR7
-      - TR8
   France:
     config:
       facecolor1: "#a676c9"
@@ -351,6 +381,31 @@ maps:
       - address: Paris, France
       - address: Lille, France
       - address: Marseille, France
+      - address: Nizza, France
+      - address: Lione, France
+        <<: *small_city
+      - address: Tolosa, France
+        <<: *small_city
+      - address: Strasburgo, France
+        <<: *small_city
+      - address: Bordeaux, France
+        <<: *small_city
+      - address: Rouen, France
+        <<: *small_city
+      - address: Nantes, France
+        <<: *small_city
+      - address: Le Havre,France
+        <<: *small_city
+      - address: Montpellier, France
+        <<: *small_city
+      - address: Aix-en-Provence,France
+        <<: *small_city
+      - address: Avignone, France
+        <<: *small_city
+      - address: Annecy, France
+        <<: *small_city
+      - address: Grenoble, France
+        <<: *small_city
     territori:
       "Aix en\n Provence":
         - FRJ # Occitanie
@@ -366,7 +421,9 @@ maps:
       Borgougne:
         - FRC  # Bourgougne
         - FRE  # Haute de France
-        - FRF3 # franca contea
+        - FRF31 # franca contea
+        - FRF32
+        - FRF34
         - FRF2
       Paris:
         - FR1 # paris
@@ -380,18 +437,17 @@ maps:
       - 0.0
     citta:
       - address: Roma, Italy
-        size: 24
-        text: "◉"
       - address: Milano, Italy
-        size: 24
-        text: "◉"
       - address: Napoli, Italy
-        size: 24
-        text: "◉"
       - address: Firenze, Italy
         <<: *small_city
       - address: Bologna, Italy
         <<: *small_city
+      - address: Venezia, Italia
+        <<: *small_city
+      - address: Torino, Italia
+        <<: *small_city
+    sourcefile: 'tmp-italia.geojson'
     territori:
       "Torino":
       - ITC1
