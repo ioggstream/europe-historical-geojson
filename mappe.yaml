@@ -343,6 +343,13 @@ maps:
       - address: Istanbul, Turchia
       - address: Atene, Grecia
       - address: Sofia, Bulgaria
+      - address: Ankara, Turchia
+      - address: Skopje, Macedonia
+      - address: Belgrado, Serbia
+      - address: Bucarest, Romania
+      - address: Tirana, Albania
+      - address: Salonicco, Grecia
+      - address: Smirne, Turchina
     territori:
 
       Albania:
