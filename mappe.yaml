@@ -447,7 +447,6 @@ maps:
         <<: *small_city
       - address: Torino, Italia
         <<: *small_city
-    sourcefile: 'tmp-italia.geojson'
     territori:
       "Torino":
       - ITC1
