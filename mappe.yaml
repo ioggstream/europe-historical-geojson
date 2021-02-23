@@ -94,6 +94,37 @@ maps:
       - address: Mosca, Russia
       - address: Sankt Petersbourg, Russia
       - address: Varsavia, Poland
+      - address: Lipeck, Russia
+        <<: *small_city
+      - address: Orel, Russia
+        <<: *small_city
+      - address: Brjansk, Russia
+        <<: *small_city
+      - address: Vladimir, Russia
+        <<: *small_city
+      - address: Mahilev, Belarus
+        <<: *small_city
+      - address: Tallinn, Eesti
+        <<: *small_city
+      - address: Vilnius, Lithuania
+        <<: *small_city
+      - address: Riga, Latvia
+        <<: *small_city
+      - address: Tver, Russia
+        <<: *small_city
+      - address: Kaluga, Russia
+        <<: *small_city
+      - address: Penza, Russia
+        <<: *small_city
+      - address: Jaroslavl, Russia
+        <<: *small_city
+      - address: Helsinki, Finland
+        <<: *small_city
+      - address: Poltava, Ukraina
+        <<: *small_city
+      - address: Cerkasy, Ukraina
+      <<: *small_city
+
     country-borders: urss.geojson
     regioni:
         Ucraina:
