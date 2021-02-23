@@ -56,7 +56,7 @@ seas:
   - Golfo di Biscaglia
   - Stretto di Gibilterra
 maps:
-  "UnitedKingdom":
+  "United Kingdom":
     config:
       facecolor1: blue
       facecolor2: blue
@@ -180,10 +180,10 @@ maps:
       Portugal:
       - "PT"
       Catalunya:
+        - ES1
         - ES2
         - ES5
-      Aragon:
-        - ES1
+      Castilla:
         - ES3
         - ES4
         - ES6
@@ -198,8 +198,7 @@ maps:
         - BE
         - NL
         - LU
-      Serbia:
-        - "file://tmp-Serbia.geojson"
+
   "Deutschland":
     citta:
     - address: Berlino, Germania
@@ -342,20 +341,27 @@ maps:
     citta:
       - address: Istanbul, Turchia
       - address: Atene, Grecia
-      - address: Sofia, Bulgaria
+      - address: Sofia, BG
       - address: Ankara, Turchia
-      - address: Skopje, Macedonia
-      - address: Belgrado, Serbia
-      - address: Bucarest, Romania
+        <<: *small_city
+      - address: Bucarest, RO
+        <<: *small_city
       - address: Tirana, Albania
+        <<: *small_city
       - address: Salonicco, Grecia
-      - address: Smirne, Turchina
+        <<: *small_city
+      - address: Smirne, Turchia
+        <<: *small_city
+      - address: Skopje, Macedonia
+        <<: *small_city
+      - address: Belgrado, Serbia
+        <<: *small_city
+
     territori:
 
       Albania:
       - AL
       "Grecia":
-     # - EL
       - EL3
       - EL4
       - EL6
@@ -364,18 +370,20 @@ maps:
       - EL54
       Bulgaria:
        - BG
-       - EL51  # Per giocabilità lasciamo i confini attuali della Grecia.
+       - EL51
       Romania:
       - RO2
       - RO3
       - RO41
+      Serbia:
+        - "file://tmp-Serbia.geojson"
       Turkiye:
       - TR1
       - TR21 # Tracia
       - TR22
       - TR4
       - TR8
-      Antalia:
+      # Antalia:
       - TR3
       - TR5
       - TR6
@@ -414,7 +422,7 @@ maps:
       - address: Grenoble, France
         <<: *small_city
     territori:
-      "Aix en\n Provence":
+      "Provence":
         - FRJ # Occitanie
         - FRK # Auvergne
         - FRL # Auvergne
@@ -423,7 +431,7 @@ maps:
         - FRG # Pays de la Loire
         - FRD
         - FRH
-      Bordeaux:
+      Aquitaine:
         - FRI
       Borgougne:
         - FRC  # Bourgougne
