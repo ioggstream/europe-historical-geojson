@@ -179,6 +179,28 @@ maps:
         <<: *small_city
       - address: Ceuta, Espana
         <<: *small_city
+      - address: Bilbao, Espana
+        <<: *small_city
+      - address: Valencia, Espana
+        <<: *small_city
+      - address: Granada, Espana
+        <<: *small_city
+      - address: Saragozza, Espana
+        <<: *small_city
+      - address: Cordova, Espana
+        <<: *small_city
+      - address: Toledo, Espana
+        <<: *small_city
+      - address: Salamanca, Espana
+        <<: *small_city
+      - address: Pamplona, Espana
+        <<: *small_city
+
+
+
+  
+
+
 
     territori:
       # Svizzera:
