@@ -173,6 +173,12 @@ maps:
         <<: *small_city
       - address: Coimbra, Portugal
         <<: *small_city
+      - address: Sevilla, Espana
+        <<: *small_city
+      - address: Melilla, Espana
+        <<: *small_city
+      - address: Ceuta, Espana
+        <<: *small_city
 
     territori:
       # Svizzera:
