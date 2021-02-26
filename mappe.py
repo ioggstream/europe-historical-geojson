@@ -18,6 +18,7 @@ import pyproj
 import requests_cache
 import yaml
 from contextily import add_basemap
+import contextily as ctx
 from geopandas import GeoDataFrame, GeoSeries
 from matplotlib import pyplot as plt
 from pandas import DataFrame
@@ -55,7 +56,7 @@ LARGE_CITY = "\u2299"  # "◉"
 def annotate_city(
     address,
     text=LARGE_CITY,
-    state_label=None,
+    empire_label=None,
     fontsize=24,
     fontname="DejaVu Serif",
     **kwargs,
@@ -69,19 +70,19 @@ def annotate_city(
     annotate_coords(
         coords,
         text=text,
-        state_label=state_label,
+        empire_label=empire_label,
         fontsize=fontsize,
         fontname=fontname,
         **kwargs,
     )
 
 
-def annotate_coords(xy, text, state_label=None, **kwargs):
+def annotate_coords(xy, text, empire_label=None, **kwargs):
     translate = (0, 0)
     adjust = [-1863.686871749116, -252.13592858798802]
-    if state_label:
-        state_config = maps()[state_label]
-        translate = state_config.get("translate", [0, 0])
+    if empire_label:
+        empire_config = maps()[empire_label]
+        translate = empire_config.get("translate", [0, 0])
     coords = np.array(xy)
     coords += np.array(translate)
     map_coords = point_coords(*coords)
@@ -131,9 +132,9 @@ def baricenter(s):
     return s.unary_union.representative_point().coords[:][0]
 
 
-def collega(*territori):
-    """Collega due territori"""
-    line = [baricenter(x) for x in territori]
+def collega(*regions):
+    """Collega due regions"""
+    line = [baricenter(x) for x in regions]
     return geoline(line[0], line[1])
 
 
@@ -225,17 +226,6 @@ def togli_isolette(area, base=1):
     return area
 
 
-def togli_isolette_2(area, base):
-    print(id(area))
-    entity = getattr(area, "geometry", area)
-    for i, poli in enumerate(entity):
-        if isinstance(poli, MultiPolygon):
-            print(i, max(k.area for k in poli))
-            entity[i] = MultiPolygon([k for k in poli if k.area > base])
-        if isinstance(poli, Polygon):
-            print("poli", i, poli.area)
-
-
 def cm2inch(*tupl):
     inch = 2.54
     if isinstance(tupl[0], tuple):
@@ -290,38 +280,38 @@ def get_polygons(label, retry=0):
     return ret.content.decode()
 
 
-def get_regions(state_label) -> dict:
-    territori = maps()[state_label]["territori"]
-    return {k: join_areas(v) for k, v in territori.items()}
+def get_regions(empire_label) -> dict:
+    regions = maps()[empire_label]["regions"]
+    return {k: join_areas(v) for k, v in regions.items()}
 
 
-def get_empire(state_label, cache=True) -> GeoDataFrame:
+def get_empire(empire_label, cache=True) -> GeoDataFrame:
     """:return a WGS84 geodataframe eventually intersected with the rest"""
-    f = state_label.replace("\n", " ")
+    f = empire_label.replace("\n", " ")
     cache_file = Path(f"tmp-{f}.geojson")
     if cache and cache_file.exists():
         log.warning(f"Reading from {cache_file}")
         ret = gpd.read_file(cache_file.open())
         assert ret.crs == EPSG_4326_WGS84
         return ret
-    regions = list(get_regions(state_label).items())
+    regions = list(get_regions(empire_label).items())
     n, t = regions[0]
 
-    df = DataFrame({"name": [n], "state": [state_label]})
+    df = DataFrame({"name": [n], "state": [empire_label]})
     ret = gpd.GeoDataFrame(df, geometry=t, crs=EPSG_4326_WGS84)
     for n, t in regions[1:]:
         ret = ret.append(
             gpd.GeoDataFrame(
-                DataFrame({"name": [n], "state": [state_label]}),
+                DataFrame({"name": [n], "state": [empire_label]}),
                 geometry=t,
                 crs=EPSG_4326_WGS84,
             )
         )
     ret = ret.reset_index()
-    state_config = maps()[state_label]
-    translate = state_config.get("translate", [0, 0])
-    scale = state_config.get("scale", [1.0, 1.0])
-    geo_config = state_config.get("country-borders")
+    empire_config = maps()[empire_label]
+    translate = empire_config.get("translate", [0, 0])
+    scale = empire_config.get("scale", [1.0, 1.0])
+    geo_config = empire_config.get("country-borders")
     if geo_config:
         # import pdb; pdb.set_trace()
         borders = gpd.read_file(open(geo_config), crs=EPSG_4326_WGS84).unary_union
@@ -346,25 +336,25 @@ def render(
     plot_labels=True,
     plot_geo=True,
     plot_cities=True,
-    plot_state_labels=True,
-    plot_state_labels_only=False,
+    plot_empire_labels=True,
+    plot_empire_labels_only=False,
     cities=None,
 ):
     cities = cities or []
     empire = gdfm
     my_crs = MY_CRS
 
-    state_label = gdfm.state.values[0]
+    empire_label = gdfm.state.values[0]
 
-    if state_label != "Deutschland":
+    if empire_label != "Deutschland":
         empire = intersect(empire, _get_europe())
 
-    if plot_state_labels:
+    if plot_empire_labels:
         empire_center = (
             empire.to_crs(my_crs).unary_union.representative_point().coords[:][0]
         )
         plt.annotate(
-            text=state_label,
+            text=empire_label,
             xy=empire_center,
             horizontalalignment="center",
             verticalalignment="center",
@@ -373,7 +363,7 @@ def render(
             fontname=FONT_GOTHIC,
             alpha=0.7,
         )
-        if plot_state_labels_only:
+        if plot_empire_labels_only:
             plot_cities = False
             plot_labels = False
     # import pdb; pdb.set_trace()
@@ -392,20 +382,21 @@ def render(
                         xy=point,
                         horizontalalignment="center",
                         verticalalignment="center",
-                        # fontsize=14,
-                        # color="white",
-                        fontname="URW Bookman",
-                        color="black",
-                        fontsize=16,
+
+                        fontsize=20,
+                        color="white",
+                        fontname=FONT_GOTHIC,
+
+                        #fontname="URW Bookman", color="black", fontsize=16,
                         # fontstyle="italic",
-                        state_label=state_label,
+                        empire_label=None,
                     )
             except:
                 raise
 
     if plot_cities:
         for city in cities:
-            annotate_city(**city, state_label=state_label)
+            annotate_city(**city, empire_label=empire_label)
 
     # Limit the map to EU and convert to 3857 to improve printing.
     # empire = gpd.overlay(empire, _get_europe(), how='intersection')
@@ -426,14 +417,14 @@ def render(
 
 
 def render_state(
-    state_label, ax, plot_labels=True, plot_geo=True, plot_cities=True, **kwargs
+    empire_label, ax, plot_labels=True, plot_geo=True, plot_cities=True, **kwargs
 ):
-    state_area = get_empire(state_label)
-    state_config = maps()[state_label]
-    color_config = state_config["config"]
-    cities = state_config.get("citta", [])
+    empire_area = get_empire(empire_label)
+    empire_config = maps()[empire_label]
+    color_config = empire_config["config"]
+    cities = empire_config.get("citta", [])
     render(
-        state_area,
+        empire_area,
         ax=ax,
         plot_labels=plot_labels,
         plot_geo=plot_geo,
@@ -442,7 +433,7 @@ def render_state(
         **color_config,
         **kwargs,
     )
-    return state_area
+    return empire_area
 
 
 def test_render_state():
@@ -451,7 +442,7 @@ def test_render_state():
     fig.savefig("/tmp/test-render-state.png", dpi=300)
 
 
-def test_render_labels():
+def test_render_labels_ok():
     fig_label, label_board = get_board()
     with Pool(processes=20) as pool:
         pool.map(
@@ -461,15 +452,38 @@ def test_render_labels():
                 plot_geo=False,
                 plot_labels=True,
                 plot_cities=False,
-                plot_state_labels=False,
+                plot_empire_labels=False,
             ),
             COUNTRIES,
         )
-    # render_state(state_label="Italia", ax=label_board, plot_geo=False, plot_labels=True)
+    # render_state(empire_label="Italia", ax=label_board, plot_geo=False, plot_labels=True)
     fig_label.savefig("label-board.eps", dpi=300, transparent=True, format="eps")
 
 
-def test_render_cities():
+def test_render_background_ok():
+    fig, ax = get_board()
+    eu = _get_europe().to_crs(MY_CRS)
+    eu.plot(ax=ax, color="none")
+
+    add_basemap(ax, crs=str(MY_CRS), source=ctx.providers.Esri.WorldPhysical)
+    fig.savefig("terrain-board.png", dpi=300, transparent=True)
+
+
+
+def test_render_background_masked_ok():
+    diff = _get_europe().to_crs(MY_CRS)
+    for c in COUNTRIES:
+        diff = diff - get_empire(c).to_crs(MY_CRS).unary_union
+
+    fig, ax = get_board()
+    diff.plot(ax=ax, color="lightblue")
+    add_basemap(ax, crs=str(MY_CRS),
+                #source=ctx.providers.Esri.WorldPhysical,
+                source=ctx.providers.Esri.WorldShadedRelief
+                )
+    fig.savefig("masked-terrain-board.png", dpi=300, transparent=True)
+
+def test_render_cities_ok():
     fig_label, label_board = get_board()
     with Pool(processes=20) as pool:
         pool.map(
@@ -479,14 +493,14 @@ def test_render_cities():
                 plot_geo=False,
                 plot_labels=False,
                 plot_cities=True,
-                plot_state_labels=False,
+                plot_empire_labels=False,
             ),
             COUNTRIES,
         )
     fig_label.savefig("cities-board.eps", dpi=300, transparent=True, format="eps")
 
 
-def test_render_state_labels():
+def test_render_empire_labels_ok():
     fig_label, label_board = get_board()
     with Pool(processes=20) as pool:
         pool.map(
@@ -496,12 +510,14 @@ def test_render_state_labels():
                 plot_geo=False,
                 plot_labels=False,
                 plot_cities=False,
-                plot_state_labels=True,
-                plot_state_labels_only=True,
+                plot_empire_labels=True,
+                plot_empire_labels_only=True,
             ),
             COUNTRIES,
         )
-    fig_label.savefig("state_labels-board.eps", dpi=300, transparent=True, format="eps")
+    fig_label.savefig(
+        "empire_labels-board.eps", dpi=300, transparent=True, format="eps"
+    )
 
 
 def render_seas(ax=None):
@@ -520,20 +536,28 @@ def render_board(countries=COUNTRIES, background=False):
     countries = countries or COUNTRIES
     with Pool(processes=20) as pool:
         pool.map(partial(render_state, ax=risk_board, plot_labels=False), countries)
-        # pool.map(partial(render_state, ax=label_board, plot_geo=False, plot_labels=True), countries,)
         pool.map(partial(render_state, ax=full_board), countries)
 
     render_seas(ax=full_board)
-    # add_basemap(full_board, crs=MY_EPSG)
-    fig.savefig("/tmp/risk-board.png", dpi=300, transparent=True)
-    fig_label.savefig("/tmp/label-board.png", dpi=300, transparent=True)
-    fig_full.savefig("/tmp/full-board.png", dpi=300, transparent=True)
+
+    if False:
+        nbr = {}
+        df = get_empire(COUNTRIES[0])
+        for x in COUNTRIES[1:]:
+            df = df.append(get_empire(x))
+        prepare_neighbor_net(df, nbr)
+        plot_net(nbr, risk_board)
+        df.plot(ax=risk_board)
+
+    # add_basemap(full_board, crs=str(MY_CRS), )
+    fig.savefig("/tmp/risk-board.png", dpi=300, bbox_inches='tight', transparent=True)
+    fig_full.savefig("/tmp/full-board.png", dpi=300, bbox_inches='tight', transparent=True)
 
 
 def get_board():
     fig, risk_board = plt.subplots(1, 1)
-    plt.tight_layout(pad=1)
-    fig.set_size_inches(cm2inch(29 * 2, 21 * 2), forward=True)
+    plt.tight_layout(pad=0.05)
+    fig.set_size_inches(cm2inch(29 * 2.2, 21 * 2.2), forward=True)
     fig.set_dpi(300)
     risk_board.set_axis_off()
     return fig, risk_board
@@ -578,7 +602,7 @@ def dump_cache():
 
 
 def save_state(gdf: GeoDataFrame):
-    state_label = gdf.state.values[0]
+    empire_label = gdf.state.values[0]
 
     for r in gdf.name:
         region_df = gdf[gdf.state == r]
@@ -586,7 +610,7 @@ def save_state(gdf: GeoDataFrame):
             log.warning(f"Region is empty {r}")
             continue
         region_df.to_file(
-            f"data/geojson/tmp-{state_label}-{r}.geojson", driver="GeoJSON"
+            f"data/geojson/tmp-{empire_label}-{r}.geojson", driver="GeoJSON"
         )
 
 
@@ -602,8 +626,8 @@ def test_save_states():
 
 
 def download_only():
-    for state_label in COUNTRIES:
-        get_regions(state_label)
+    for empire_label in COUNTRIES:
+        get_regions(empire_label)
 
 
 if __name__ == "__main__":

@@ -39,7 +39,7 @@ constants:
     size: 24
     text: "\u2299"
   small_city: &small_city
-    size: 12
+    size: 10
     text: "●"
 
 seas:
@@ -56,13 +56,18 @@ seas:
   - Golfo di Biscaglia
   - Stretto di Gibilterra
 maps:
+  Neutrali:
+    config:
+      facecolor1: "none"
+      facecolor2: "none"
+    regions:
+      Svizzera:
+        - CH
   "United Kingdom":
     config:
-      facecolor1: blue
-      facecolor2: blue
-    translate:
-      - -1.0
-      - 2.0
+      facecolor1: '#4735bc'
+      facecolor2: '#4735bc'
+    # translate: [-1.0, - 2.0]
     citta:
       - address: London, UK
       - address: Manchester, UK
@@ -226,13 +231,6 @@ maps:
         <<: *small_city
       - address: Pamplona, Espana
         <<: *small_city
-
-
-
-  
-
-
-
     regions:
       # Svizzera:
        #- "CH"
@@ -292,7 +290,7 @@ maps:
         - DE1
         - DE2
         - DE7 # Hesse
-      "Preußen - Prussia":
+      "Preussen - Prussia":
         - 103906 # Konigsberg
         - PL6 # Pomerania
         - PL41 # Pomerania
@@ -389,7 +387,7 @@ maps:
   "Ottomano":
     config:
       facecolor1: "#76cfe7"
-      facecolor2: "#2c97ba"
+      facecolor2: "#6d7054"
     tmp:
       Serbia:
         - RS2
@@ -450,7 +448,7 @@ maps:
   France:
     config:
       facecolor1: "#a676c9"
-      facecolor2: "#6d1195"
+      facecolor2: "#87a2c7"
     citta:
       - address: Paris, France
       - address: Lille, France
@@ -505,7 +503,7 @@ maps:
   Italia:
     config:
       facecolor1: darkgreen
-      facecolor2: green
+      facecolor2: '#447447'
     translate:
       - 0.0
       - 0.0
@@ -520,6 +518,18 @@ maps:
       - address: Venezia, Italia
         <<: *small_city
       - address: Torino, Italia
+        <<: *small_city
+      - address: Palermo, Italia
+        <<: *small_city
+      - address: Cagliari, Italia
+        <<: *small_city
+      - address: Genova, Italia
+        <<: *small_city
+      - address: Pisa, Italia
+        <<: *small_city
+      - address: Bari, Italia
+        <<: *small_city
+      - address: Bergamo, Italia
         <<: *small_city
     regions:
       "Torino":

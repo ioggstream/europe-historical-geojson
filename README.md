@@ -11,16 +11,25 @@ maps based on a hundred years of wars between the Old
 Continent's countries comes actually from the GISCO
 dataset of the European Union maps.
 
-## Running
+## Build Empires boundaries
 
-Run
+To build empire boundaries and avoid stressing OpenStreetmap
+run
 
-        make mappe
+```
+pytest -k save
+```
 
-and you will find in /tmp the following files
-that you can use to render or edit a new label board.
+Then build maps with
 
+```
+python -mmappe
+```
 
-full-board-mappe.png
-risk-board-mappe.png
-label-board-mappe.png
+this will create 3 files:
+
+```
+/tmp/full-board.png
+/tmp/label-board.png
+/tmp/risk-board.png
+```
