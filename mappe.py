@@ -91,10 +91,10 @@ def annotate_coords(xy, text, empire_label=None, **kwargs):
 
 
 def get_city_location(address):
-    from geopy.geocoders import Nominatim
+    from geopy.geocoders import MapQuest
 
     try:
-        geolocator = Nominatim(user_agent="github.com/ioggstream")
+        geolocator = MapQuest(user_agent="europe-geojson", api_key="MKsxTz7QC7f7bxPuaPump7XiJnpydt7R")
         ret = geolocator.geocode(address)
         return ret.point.longitude, ret.point.latitude
     except Exception as e:

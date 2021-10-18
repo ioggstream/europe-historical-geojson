@@ -255,6 +255,8 @@ maps:
         - BE
         - NL
         - LU
+      Serbia:
+        - "file://tmp-Serbia.geojson"
 
   "Deutschland":
     citta:
@@ -415,7 +417,8 @@ maps:
         <<: *small_city
 
     regions:
-
+      Cipro:
+      - CY
       Albania:
       - AL
       "Grecia":
@@ -432,8 +435,6 @@ maps:
       - RO2
       - RO3
       - RO41
-      Serbia:
-        - "file://tmp-Serbia.geojson"
       Turkiye:
       - TR1
       - TR21 # Tracia
