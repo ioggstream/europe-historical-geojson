@@ -4,8 +4,11 @@ __pycache__/
 *$py.class
 
 # Temp files.
+
 tmp
 *.sqlite
+.idea
+
 
 # C extensions
 *.so

@@ -1,31 +1,28 @@
 import json
 import logging
-import time
-from functools import lru_cache, partial
+from functools import partial
 from io import StringIO
-from itertools import product
 from multiprocessing.pool import ThreadPool as Pool
-from operator import add
 from pathlib import Path
 from typing import List
 from urllib.parse import parse_qs, urlparse
 
+import contextily as ctx
 import geopandas as gpd
 import matplotlib
 import matplotlib.pyplot as plt
-import numpy as np
 import pyproj
 import requests_cache
-import yaml
 from contextily import add_basemap
-import contextily as ctx
 from geopandas import GeoDataFrame, GeoSeries
 from matplotlib import pyplot as plt
 from pandas import DataFrame
 from requests import get
-from requests_cache import CachedSession
-from shapely.geometry import MultiPolygon, Point, Polygon, mapping, shape
+from shapely.geometry import MultiPolygon, Polygon, shape
 from shapely.ops import cascaded_union
+
+from .utils import *
+from .constants import *
 
 FONT_GOTHIC = "eufm10"
 
@@ -34,108 +31,8 @@ matplotlib.rcParams["pdf.fonttype"] = 42
 log = logging.getLogger(__name__)
 requests_cache.install_cache("demo_cache")
 
-config = lambda: yaml.safe_load(Path("mappe.yaml").read_text())
-maps = lambda: config()["maps"]
-seas = lambda: config()["seas"]
 
 COUNTRIES = tuple(maps().keys())
-EPSG_3003 = 3003
-EPSG_2196 = 2196
-EPSG_3395 = 3395
-EPSG_4326_WGS84 = "EPSG:4326"
-
-
-# Proiezione di Peters con aree riadattate.
-MY_CRS = pyproj.Proj(
-    proj="cea", lon_0=0, lat_ts=45, x_0=0, y_0=0, ellps="WGS84", units="m"
-).srs
-
-LARGE_CITY = "\u2299"  # "◉"
-
-
-def annotate_city(
-    address,
-    text=LARGE_CITY,
-    empire_label=None,
-    fontsize=24,
-    fontname="DejaVu Serif",
-    **kwargs,
-):
-
-    coords = get_city_location(address)
-    if not coords:
-        log.error(f"Cannot find location: {address}, skipping")
-        return None
-
-    annotate_coords(
-        coords,
-        text=text,
-        empire_label=empire_label,
-        fontsize=fontsize,
-        fontname=fontname,
-        **kwargs,
-    )
-
-
-def annotate_coords(xy, text, empire_label=None, **kwargs):
-    translate = (0, 0)
-    adjust = [-1863.686871749116, -252.13592858798802]
-    if empire_label:
-        empire_config = maps()[empire_label]
-        translate = empire_config.get("translate", [0, 0])
-    coords = np.array(xy)
-    coords += np.array(translate)
-    map_coords = point_coords(*coords)
-    map_coords = tuple(map(add, map_coords, adjust))
-    plt.annotate(text=text, xy=map_coords, **kwargs)
-
-
-def get_city_location(address):
-    from geopy.geocoders import MapQuest
-
-    try:
-        geolocator = MapQuest(user_agent="europe-geojson", api_key="MKsxTz7QC7f7bxPuaPump7XiJnpydt7R")
-        ret = geolocator.geocode(address)
-        return ret.point.longitude, ret.point.latitude
-    except Exception as e:
-        log.exception("Error reading %r", e)
-        return None
-
-
-def test_city_location_sea():
-    coords = get_city_location("Mare adriatico")
-    raise NotImplementedError
-
-
-def point_coords(x=24, y=41, crs=EPSG_4326_WGS84):
-    x = Point(x, y)
-    points = gpd.GeoDataFrame({"geometry": [x]}, crs=crs).to_crs(MY_CRS)
-    return [x for x in points.geometry[0].coords[:][0]]
-
-
-def test_baricenter():
-    gdf = gpd.read_file(Path("tmp-italia.geojson"))
-    assert baricenter(gdf)
-    for i in gdf.index:
-        print(baricenter(gdf[gdf.index == i]))
-
-
-@lru_cache(maxsize=100)
-def geoline(x, y):
-    """Draw a line between two points"""
-    l = {"type": "LineString", "coordinates": [list(x), list(y)]}
-    return GeoSeries(shape(l))
-
-
-def baricenter(s):
-    """Ritorna il  baricentro di una geometria """
-    return s.unary_union.representative_point().coords[:][0]
-
-
-def collega(*regions):
-    """Collega due regions"""
-    line = [baricenter(x) for x in regions]
-    return geoline(line[0], line[1])
 
 
 def prepare_neighbor_net(gdf: GeoDataFrame, nbr: dict):
@@ -160,7 +57,7 @@ def plot_net(nbr, ax):
 def test_nbr_net():
     fig, ax = get_board()
     nbr = {}
-    df = get_empire("Russia")
+    df = get_state("Russia")
     prepare_neighbor_net(df, nbr)
     plot_net(nbr, ax)
 
@@ -197,11 +94,15 @@ def get_area(label) -> GeoSeries:
     ret = gpd.read_file(polygons)
     if label == "FI":
         ret = ret.scale(xfact=1.1, yfact=1.1)
+    if label == "UKMx":
+        #import pdb; pdb.set_trace()
+        ret = ret.scale(xfact=1, yfact=1)
     return ret
 
 
-def join_areas(areas: List) -> GeoSeries:
-    for tolerance in (0.02,):
+def join_areas(areas: List[str]) -> GeoSeries:
+    tolerance = None
+    for tolerance in (0.035,):
         try:
             get_areas = [get_area(label) for label in areas if label]
             ret = GeoSeries(
@@ -226,21 +127,6 @@ def togli_isolette(area, base=1):
     return area
 
 
-def cm2inch(*tupl):
-    inch = 2.54
-    if isinstance(tupl[0], tuple):
-        return tuple(i / inch for i in tupl[0])
-    else:
-        return tuple(i / inch for i in tupl)
-
-
-def addmap(ax):
-    fig, ax = plt.subplots(1, 1)
-    fig.set_size_inches(20, 20)
-    render_state("Ottomano", ax=ax)
-    add_basemap(ax)
-
-
 def get_polygons(label, retry=0):
     """
     Si collega ad internet e scarica i poligoni associati alla label.
@@ -259,7 +145,7 @@ def get_polygons(label, retry=0):
             #  pinging poligons.
             requests_cache.core.get_cache().delete_url(u)
             get(f"http://polygons.openstreetmap.fr/?id={label}")
-        res = get(u, proxies={"http": "socks5://localhost:11111"})
+        res = get(u)  #, proxies={"http": "socks5://localhost:11111"})
         log.info("Request from cache: %r %r", u, res.from_cache)
         if res.content:
             return res.content.decode()
@@ -270,9 +156,9 @@ def get_polygons(label, retry=0):
     if label.startswith("file://"):
         return Path(label[7:]).read_text()
 
-    for db, year in (("nuts", 2021), ("countries", 2020)):
+    for db, year in (("nuts", 2021), ("countries", 2020), ):
         ret = get(
-            f"{base}/{db}/distribution/{label}-region-10m-{coord_type}-{year}.geojson"
+            f"{base}/{db}/distribution/{label}-region-20m-{coord_type}-{year}.geojson"
         )
         if ret.status_code == 200:
             break
@@ -280,38 +166,44 @@ def get_polygons(label, retry=0):
     return ret.content.decode()
 
 
-def get_regions(empire_label) -> dict:
-    regions = maps()[empire_label]["regions"]
+def get_regions(state_label) -> dict:
+    """@returns: a dict containing all the regions' geometries.
+    """
+    regions = maps()[state_label]["regions"]
     return {k: join_areas(v) for k, v in regions.items()}
 
 
-def get_empire(empire_label, cache=True) -> GeoDataFrame:
+def get_state(state_label, cache=True) -> GeoDataFrame:
     """:return a WGS84 geodataframe eventually intersected with the rest"""
-    f = empire_label.replace("\n", " ")
+    f = state_label.replace("\n", " ")
     cache_file = Path(f"tmp-{f}.geojson")
     if cache and cache_file.exists():
         log.warning(f"Reading from {cache_file}")
         ret = gpd.read_file(cache_file.open())
         assert ret.crs == EPSG_4326_WGS84
         return ret
-    regions = list(get_regions(empire_label).items())
+    regions = list(get_regions(state_label).items())
     n, t = regions[0]
 
-    df = DataFrame({"name": [n], "state": [empire_label]})
+    df = DataFrame({"name": [n], "state": [state_label]})
     ret = gpd.GeoDataFrame(df, geometry=t, crs=EPSG_4326_WGS84)
     for n, t in regions[1:]:
         ret = ret.append(
             gpd.GeoDataFrame(
-                DataFrame({"name": [n], "state": [empire_label]}),
+                DataFrame({"name": [n], "state": [state_label]}),
                 geometry=t,
                 crs=EPSG_4326_WGS84,
             )
         )
     ret = ret.reset_index()
-    empire_config = maps()[empire_label]
-    translate = empire_config.get("translate", [0, 0])
-    scale = empire_config.get("scale", [1.0, 1.0])
-    geo_config = empire_config.get("country-borders")
+    state_config = maps()[state_label]
+    translate = state_config.get("translate", [0, 0])
+    scale = state_config.get("scale", [1.0, 1.0])
+
+    #
+    # Restrict state borders using a specific geojson.
+    #
+    geo_config = state_config.get("country-borders")
     if geo_config:
         # import pdb; pdb.set_trace()
         borders = gpd.read_file(open(geo_config), crs=EPSG_4326_WGS84).unary_union
@@ -328,6 +220,9 @@ def intersect(df1: GeoDataFrame, df2: GeoDataFrame) -> GeoDataFrame:
     return gpd.overlay(df1, df2, how="intersection")
 
 
+#
+# Render maps.
+#
 def render(
     gdfm,
     facecolor1="blue",
@@ -336,25 +231,27 @@ def render(
     plot_labels=True,
     plot_geo=True,
     plot_cities=True,
-    plot_empire_labels=True,
-    plot_empire_labels_only=False,
+    plot_state_labels=True,
+    plot_state_labels_only=False,
     cities=None,
 ):
     cities = cities or []
     empire = gdfm
     my_crs = MY_CRS
 
-    empire_label = gdfm.state.values[0]
+    state_label = gdfm.state.values[0]
 
-    if empire_label != "Deutschland":
+    # FIXME: there's a problem somewhere with the German empire.
+    if state_label != "Deutschland":
         empire = intersect(empire, _get_europe())
 
-    if plot_empire_labels:
+    if plot_state_labels:
         empire_center = (
             empire.to_crs(my_crs).unary_union.representative_point().coords[:][0]
         )
+        empire_center = baricenter(empire.to_crs(my_crs))
         plt.annotate(
-            text=empire_label,
+            text=state_label,
             xy=empire_center,
             horizontalalignment="center",
             verticalalignment="center",
@@ -363,7 +260,7 @@ def render(
             fontname=FONT_GOTHIC,
             alpha=0.7,
         )
-        if plot_empire_labels_only:
+        if plot_state_labels_only:
             plot_cities = False
             plot_labels = False
     # import pdb; pdb.set_trace()
@@ -382,21 +279,19 @@ def render(
                         xy=point,
                         horizontalalignment="center",
                         verticalalignment="center",
-
                         fontsize=20,
                         color="white",
                         fontname=FONT_GOTHIC,
-
-                        #fontname="URW Bookman", color="black", fontsize=16,
+                        # fontname="URW Bookman", color="black", fontsize=16,
                         # fontstyle="italic",
-                        empire_label=None,
+                        state_label=None,
                     )
             except:
                 raise
 
     if plot_cities:
         for city in cities:
-            annotate_city(**city, empire_label=empire_label)
+            annotate_location(**city, state_label=state_label)
 
     # Limit the map to EU and convert to 3857 to improve printing.
     # empire = gpd.overlay(empire, _get_europe(), how='intersection')
@@ -417,12 +312,12 @@ def render(
 
 
 def render_state(
-    empire_label, ax, plot_labels=True, plot_geo=True, plot_cities=True, **kwargs
+    state_label, ax, plot_labels=True, plot_geo=True, plot_cities=True, **kwargs
 ):
-    empire_area = get_empire(empire_label)
-    empire_config = maps()[empire_label]
-    color_config = empire_config["config"]
-    cities = empire_config.get("citta", [])
+    empire_area = get_state(state_label)
+    state_config = maps()[state_label]
+    color_config = state_config["config"]
+    cities = state_config.get("citta", [])
     render(
         empire_area,
         ax=ax,
@@ -452,11 +347,11 @@ def test_render_labels_ok():
                 plot_geo=False,
                 plot_labels=True,
                 plot_cities=False,
-                plot_empire_labels=False,
+                plot_state_labels=False,
             ),
             COUNTRIES,
         )
-    # render_state(empire_label="Italia", ax=label_board, plot_geo=False, plot_labels=True)
+    # render_state(state_label="Italia", ax=label_board, plot_geo=False, plot_labels=True)
     fig_label.savefig("label-board.eps", dpi=300, transparent=True, format="eps")
 
 
@@ -469,19 +364,21 @@ def test_render_background_ok():
     fig.savefig("terrain-board.png", dpi=300, transparent=True)
 
 
-
 def test_render_background_masked_ok():
     diff = _get_europe().to_crs(MY_CRS)
     for c in COUNTRIES:
-        diff = diff - get_empire(c).to_crs(MY_CRS).unary_union
+        diff = diff - get_state(c).to_crs(MY_CRS).unary_union
 
     fig, ax = get_board()
     diff.plot(ax=ax, color="lightblue")
-    add_basemap(ax, crs=str(MY_CRS),
-                #source=ctx.providers.Esri.WorldPhysical,
-                source=ctx.providers.Esri.WorldShadedRelief
-                )
+    add_basemap(
+        ax,
+        crs=str(MY_CRS),
+        # source=ctx.providers.Esri.WorldPhysical,
+        source=ctx.providers.Esri.WorldShadedRelief,
+    )
     fig.savefig("masked-terrain-board.png", dpi=300, transparent=True)
+
 
 def test_render_cities_ok():
     fig_label, label_board = get_board()
@@ -493,14 +390,14 @@ def test_render_cities_ok():
                 plot_geo=False,
                 plot_labels=False,
                 plot_cities=True,
-                plot_empire_labels=False,
+                plot_state_labels=False,
             ),
             COUNTRIES,
         )
     fig_label.savefig("cities-board.eps", dpi=300, transparent=True, format="eps")
 
 
-def test_render_empire_labels_ok():
+def test_render_state_labels_ok():
     fig_label, label_board = get_board()
     with Pool(processes=20) as pool:
         pool.map(
@@ -510,19 +407,24 @@ def test_render_empire_labels_ok():
                 plot_geo=False,
                 plot_labels=False,
                 plot_cities=False,
-                plot_empire_labels=True,
-                plot_empire_labels_only=True,
+                plot_state_labels=True,
+                plot_state_labels_only=True,
             ),
             COUNTRIES,
         )
-    fig_label.savefig(
-        "empire_labels-board.eps", dpi=300, transparent=True, format="eps"
-    )
+    fig_label.savefig("state_labels-board.eps", dpi=300, transparent=True, format="eps")
 
 
 def render_seas(ax=None):
     for s in seas():
-        annotate_city(s, text=s)
+        annotate_location(s, text=s)
+
+
+def test_addmap(ax):
+    fig, ax = plt.subplots(1, 1)
+    fig.set_size_inches(20, 20)
+    render_state("Ottomano", ax=ax)
+    add_basemap(ax)
 
 
 def render_board(countries=COUNTRIES, background=False):
@@ -542,16 +444,18 @@ def render_board(countries=COUNTRIES, background=False):
 
     if False:
         nbr = {}
-        df = get_empire(COUNTRIES[0])
+        df = get_state(COUNTRIES[0])
         for x in COUNTRIES[1:]:
-            df = df.append(get_empire(x))
+            df = df.append(get_state(x))
         prepare_neighbor_net(df, nbr)
         plot_net(nbr, risk_board)
         df.plot(ax=risk_board)
 
     # add_basemap(full_board, crs=str(MY_CRS), )
-    fig.savefig("/tmp/risk-board.png", dpi=300, bbox_inches='tight', transparent=True)
-    fig_full.savefig("/tmp/full-board.png", dpi=300, bbox_inches='tight', transparent=True)
+    fig.savefig("/tmp/risk-board.png", dpi=300, bbox_inches="tight", transparent=True)
+    fig_full.savefig(
+        "/tmp/full-board.png", dpi=300, bbox_inches="tight", transparent=True
+    )
 
 
 def get_board():
@@ -602,7 +506,7 @@ def dump_cache():
 
 
 def save_state(gdf: GeoDataFrame):
-    empire_label = gdf.state.values[0]
+    state_label = gdf.state.values[0]
 
     for r in gdf.name:
         region_df = gdf[gdf.state == r]
@@ -610,14 +514,14 @@ def save_state(gdf: GeoDataFrame):
             log.warning(f"Region is empty {r}")
             continue
         region_df.to_file(
-            f"data/geojson/tmp-{empire_label}-{r}.geojson", driver="GeoJSON"
+            f"data/geojson/tmp-{state_label}-{r}.geojson", driver="GeoJSON"
         )
 
 
 def test_save_states():
     for c in COUNTRIES:
         f = c.replace("\n", " ")
-        df = get_empire(c, cache=False)
+        df = get_state(c, cache=False)
         try:
             togli_isolette(df, 0.4)
         except:
@@ -626,12 +530,5 @@ def test_save_states():
 
 
 def download_only():
-    for empire_label in COUNTRIES:
-        get_regions(empire_label)
-
-
-if __name__ == "__main__":
-    from sys import argv
-
-    countries = argv[1:] if len(argv) > 1 else None
-    render_board(countries)
+    for state_label in COUNTRIES:
+        get_regions(state_label)

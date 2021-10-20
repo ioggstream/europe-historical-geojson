@@ -67,7 +67,7 @@ maps:
     config:
       facecolor1: '#4735bc'
       facecolor2: '#4735bc'
-    # translate: [-1.0, - 2.0]
+    # translate: [-1.0, -2.0]
     citta:
       - address: London, UK
       - address: Manchester, UK
@@ -108,6 +108,8 @@ maps:
       - address: Vladimir, Russia
         <<: *small_city
       - address: Mahilev, Belarus
+        <<: *small_city
+      - address: Minsk, Belarus
         <<: *small_city
       - address: Tallinn, Eesti
         <<: *small_city
@@ -168,7 +170,7 @@ maps:
       Moskva:
         - 1029256
       "Finland\n&\nSankt Peterburg":
-      #  - file://tmp-Pietroburgo.geojson
+      #  - file://data/geojson/map-Pietroburgo.geojson
         - FI
         - 393980  # Carelia
         - 176095
@@ -177,11 +179,11 @@ maps:
         - 89331 # Novograd Grande
       "Paesi\nBaltici": ["EE", "LT", "LV"]
       Ukraina:
-        - file://tmp-Ucraina.geojson
+        - file://data/geojson/map-Ucraina.geojson
       Bielarus:
         - BY  # 59065
       Polska:
-        - file://poland-1914.geojson
+        - file://data/geojson/poland-1914.geojson
   Indipendenti:
     config:
       facecolor1: orange
@@ -256,7 +258,17 @@ maps:
         - NL
         - LU
       Serbia:
-        - "file://tmp-Serbia.geojson"
+        - "file://data/geojson/map-Serbia.geojson"
+      Albania:
+      - AL
+      Grecia:
+      - EL3
+      - EL4  # In 1880 Creta was under the Ottoman empire
+      - EL6
+      - EL52
+      - EL53
+      - EL54
+
 
   "Deutschland":
     citta:
@@ -383,9 +395,9 @@ maps:
       Bohemia:
       - CZ
       Galizia:
-        - file://tmp-Galizia.geojson
+        - file://data/geojson/map-Galizia.geojson
       Ungheria:
-        - file://tmp-Ungheria.geojson
+        - file://data/geojson/map-Ungheria.geojson
   "Ottomano":
     config:
       facecolor1: "#76cfe7"
@@ -419,15 +431,6 @@ maps:
     regions:
       Cipro:
       - CY
-      Albania:
-      - AL
-      "Grecia":
-      - EL3
-      - EL4
-      - EL6
-      - EL52
-      - EL53
-      - EL54
       Bulgaria:
        - BG
        - EL51
@@ -441,8 +444,9 @@ maps:
       - TR22
       - TR4
       - TR8
-      # Antalia:
+      Egea:
       - TR3
+      Antalia:
       - TR5
       - TR6
       - TR7
@@ -455,6 +459,7 @@ maps:
       - address: Lille, France
       - address: Marseille, France
       - address: Nizza, France
+        <<: *small_city
       - address: Lione, France
         <<: *small_city
       - address: Tolosa, France
@@ -480,7 +485,7 @@ maps:
       - address: Grenoble, France
         <<: *small_city
     regions:
-      "Provence":
+      "Provence & Corsica":
         - FRJ # Occitanie
         - FRK # Auvergne
         - FRL # Auvergne
@@ -565,4 +570,3 @@ maps:
       - ITI1
       "Sardegna":
       - ITG2 # sardegna
-
