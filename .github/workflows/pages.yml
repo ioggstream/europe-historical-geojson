@@ -2,7 +2,7 @@
 
 name: CI
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
@@ -36,7 +36,7 @@ jobs:
           pip install pyyaml geopandas shapely matplotlib numpy pyproj requests_cache requests pandas contextily typing
           mkdir _build
           echo "Ciao" > _build/index.html
-          
+
       - name: Deploy to GitHub Pages
         if: success()
         uses: crazy-max/ghaction-github-pages@v2

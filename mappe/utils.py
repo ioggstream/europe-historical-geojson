@@ -3,6 +3,7 @@ import os
 from functools import lru_cache
 from operator import add
 from pathlib import Path
+from typing import List
 
 import geopandas as gpd
 import matplotlib.pyplot as plt
@@ -20,6 +21,7 @@ LARGE_CITY = "\u2299"  # "◉"
 config = lambda: yaml.safe_load(Path("mappe.yaml").read_text())
 maps = lambda: config()["maps"]
 seas = lambda: config()["seas"]
+links = lambda: config()["links"]
 
 
 def annotate_location(
@@ -84,6 +86,11 @@ def point_coords(x=24, y=41, crs=EPSG_4326_WGS84):
     x = Point(x, y)
     points = gpd.GeoDataFrame({"geometry": [x]}, crs=crs).set_crs(crs).to_crs(MY_CRS)
     return [x for x in points.geometry[0].coords[:][0]]
+
+
+def geolocate_as_dataframe(address) -> List[GeoDataFrame]:
+    coords = geolocate(address)
+    return point_coords(*coords)
 
 
 def cm2inch(*tupl):

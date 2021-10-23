@@ -11,7 +11,6 @@ import contextily as ctx
 import geopandas as gpd
 import matplotlib
 import matplotlib.pyplot as plt
-import pyproj
 import requests_cache
 from contextily import add_basemap
 from geopandas import GeoDataFrame, GeoSeries
@@ -21,8 +20,8 @@ from requests import get
 from shapely.geometry import MultiPolygon, Polygon, shape
 from shapely.ops import cascaded_union
 
-from .utils import *
 from .constants import *
+from .utils import *
 
 FONT_GOTHIC = "eufm10"
 
@@ -53,13 +52,6 @@ def plot_net(nbr, ax):
             y = nbr[d]["coords"]
             geoline(x, y).plot(ax=ax, color="red")
 
-
-def test_nbr_net():
-    fig, ax = get_board()
-    nbr = {}
-    df = get_state("Russia")
-    prepare_neighbor_net(df, nbr)
-    plot_net(nbr, ax)
 
 
 def _get_europe():
@@ -95,7 +87,7 @@ def get_area(label) -> GeoSeries:
     if label == "FI":
         ret = ret.scale(xfact=1.1, yfact=1.1)
     if label == "UKMx":
-        #import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         ret = ret.scale(xfact=1, yfact=1)
     return ret
 
@@ -145,7 +137,7 @@ def get_polygons(label, retry=0):
             #  pinging poligons.
             requests_cache.core.get_cache().delete_url(u)
             get(f"http://polygons.openstreetmap.fr/?id={label}")
-        res = get(u)  #, proxies={"http": "socks5://localhost:11111"})
+        res = get(u)  # , proxies={"http": "socks5://localhost:11111"})
         log.info("Request from cache: %r %r", u, res.from_cache)
         if res.content:
             return res.content.decode()
@@ -156,7 +148,7 @@ def get_polygons(label, retry=0):
     if label.startswith("file://"):
         return Path(label[7:]).read_text()
 
-    for db, year in (("nuts", 2021), ("countries", 2020), ):
+    for db, year in (("nuts", 2021), ("countries", 2020)):
         ret = get(
             f"{base}/{db}/distribution/{label}-region-20m-{coord_type}-{year}.geojson"
         )
@@ -170,7 +162,7 @@ def get_regions(state_label) -> dict:
     """@returns: a dict containing all the regions' geometries.
     """
     regions = maps()[state_label]["regions"]
-    return {k: join_areas(v) for k, v in regions.items()}
+    return {k: join_areas(v["codes"]) for k, v in regions.items()}
 
 
 def get_state(state_label, cache=True) -> GeoDataFrame:
@@ -223,6 +215,12 @@ def intersect(df1: GeoDataFrame, df2: GeoDataFrame) -> GeoDataFrame:
 #
 # Render maps.
 #
+from multiprocessing import Manager
+
+manager = Manager()
+state_archive = manager.dict()
+
+
 def render(
     gdfm,
     facecolor1="blue",
@@ -235,6 +233,7 @@ def render(
     plot_state_labels_only=False,
     cities=None,
 ):
+    global state_archive
     cities = cities or []
     empire = gdfm
     my_crs = MY_CRS
@@ -245,14 +244,12 @@ def render(
     if state_label != "Deutschland":
         empire = intersect(empire, _get_europe())
 
+    state_archive[state_label] = empire
     if plot_state_labels:
-        empire_center = (
-            empire.to_crs(my_crs).unary_union.representative_point().coords[:][0]
-        )
-        empire_center = baricenter(empire.to_crs(my_crs))
+        state_center = baricenter(empire.to_crs(my_crs))
         plt.annotate(
             text=state_label,
-            xy=empire_center,
+            xy=state_center,
             horizontalalignment="center",
             verticalalignment="center",
             fontsize=48,
@@ -274,8 +271,9 @@ def render(
             try:
                 point = baricenter(region)
                 if True:
+                    region_label = maps()[state_label]['regions'][region_name].get("label", region_name)
                     annotate_coords(
-                        text=region_name,
+                        text=region_label,
                         xy=point,
                         horizontalalignment="center",
                         verticalalignment="center",
@@ -314,12 +312,12 @@ def render(
 def render_state(
     state_label, ax, plot_labels=True, plot_geo=True, plot_cities=True, **kwargs
 ):
-    empire_area = get_state(state_label)
+    state_area = get_state(state_label)
     state_config = maps()[state_label]
     color_config = state_config["config"]
     cities = state_config.get("citta", [])
     render(
-        empire_area,
+        state_area,
         ax=ax,
         plot_labels=plot_labels,
         plot_geo=plot_geo,
@@ -328,7 +326,7 @@ def render_state(
         **color_config,
         **kwargs,
     )
-    return empire_area
+    return state_area
 
 
 def test_render_state():
@@ -427,6 +425,23 @@ def test_addmap(ax):
     add_basemap(ax)
 
 
+def render_links(ax):
+    # import pdb; pdb.set_trace()
+    links_ = links()
+    for link in links_:
+        src, dst = link
+        # src = find_region(src)
+        # dst = find_region(dst)
+        src = tuple(geolocate(src))
+        dst = tuple(geolocate(dst))
+
+        print("linea", src, dst)
+        if all(x is not None for x in (src, dst)):
+            line = geoline(src, dst)
+            line = line.set_crs(EPSG_4326_WGS84).to_crs(MY_CRS)
+            line.plot(ax=ax, color="black", linewidth=2)
+
+
 def render_board(countries=COUNTRIES, background=False):
     fig, risk_board = get_board()
     fig_label, label_board = get_board()
@@ -436,11 +451,13 @@ def render_board(countries=COUNTRIES, background=False):
         eu.plot(ax=risk_board, facecolor="lightblue")
 
     countries = countries or COUNTRIES
+    render_links(ax=full_board)
+
     with Pool(processes=20) as pool:
         pool.map(partial(render_state, ax=risk_board, plot_labels=False), countries)
         pool.map(partial(render_state, ax=full_board), countries)
 
-    render_seas(ax=full_board)
+    # render_seas(ax=full_board)
 
     if False:
         nbr = {}
@@ -513,22 +530,18 @@ def save_state(gdf: GeoDataFrame):
         if region_df.empty:
             log.warning(f"Region is empty {r}")
             continue
-        region_df.to_file(
-            f"data/geojson/tmp-{state_label}-{r}.geojson", driver="GeoJSON"
-        )
-
-
-def test_save_states():
-    for c in COUNTRIES:
-        f = c.replace("\n", " ")
-        df = get_state(c, cache=False)
-        try:
-            togli_isolette(df, 0.4)
-        except:
-            pass
-        df.to_file(f"tmp-{f}.geojson", driver="GeoJSON")
+        region_df.to_file(f"tmp-{state_label}-{r}.geojson", driver="GeoJSON")
 
 
 def download_only():
     for state_label in COUNTRIES:
         get_regions(state_label)
+
+
+def find_region(region_name):
+    global state_archive
+    for state, gdf in state_archive.items():
+        region = gdf[gdf.name == region_name]
+        if not region.empty:
+            return region
+    return None

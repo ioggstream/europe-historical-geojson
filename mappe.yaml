@@ -55,6 +55,20 @@ seas:
   - Mar Ionio
   - Golfo di Biscaglia
   - Stretto di Gibilterra
+links:
+- [cagliari, palermo]
+- [santa teresa di gallura, marsiglia]
+- [edinburg, bergen]
+- [smirne, atene]
+- [valona, otranto]
+- [Frederikshavn, Goteborg]
+- [Hirtshals, Kristiansand]
+- [graddo, turku]
+- [Calais, Dover]
+- [Cherbourg, Bornemouth]
+- [Belfast, Portpatrick]
+- [Wexford, Fishguard]
+
 maps:
   Neutrali:
     config:
@@ -62,8 +76,10 @@ maps:
       facecolor2: "none"
     regions:
       Svizzera:
+        codes:
         - CH
-  "United Kingdom":
+  UK:
+    label: "United Kingdom"
     config:
       facecolor1: '#4735bc'
       facecolor2: '#4735bc'
@@ -74,21 +90,27 @@ maps:
       - address: Dublin, Ireland
     regions:
       Scotland:
+        label: Scotland
+        codes:
         - UKM
       Wales:
+        codes:
         - UKL
         - UKG
       Yorkshire:
+        codes:
         - UKC
         - UKD
         - UKE
       London:
+        codes:
         - UKH
         - UKI
         - UKF
         - UKJ
         - UKK
       Ireland:
+        codes:
         - IE
         - UKN
   Russia:
@@ -135,54 +157,62 @@ maps:
     country-borders: urss.geojson
     regioni:
         Ucraina:
-        - 72634 # Odessa
-        - 71022 # Cherson
-        - 71236
-        - 71248 # Kiev
-        - 58974 # MD
-        #      - 42866 # Kiev
-        - 71236 # Rivne
-        - 71245 # Zitomir
-        - 72639 # Crimea
-        - 71064 # Volinia
-        - 71249 # Chernihiv ? HU
-        - 72635
-        - 71971
-        - 90726
-        - 91294
-        - 71250 # Sumy
-        - 71254
-        - 71980 # Zaporizhia
-        - 91278 # Cherkasy
-        - 90742 # Chmelnyckyk
-        - 101746 # Dnipr
-        - 101859 # Kirowhrad
-        - 393980  # Karelia
+          - 72634 # Odessa
+          - 71022 # Cherson
+          - 71236
+          - 71248 # Kiev
+          - 58974 # MD
+          #      - 42866 # Kiev
+          - 71236 # Rivne
+          - 71245 # Zitomir
+          - 72639 # Crimea
+          - 71064 # Volinia
+          - 71249 # Chernihiv ? HU
+          - 72635
+          - 71971
+          - 90726
+          - 91294
+          - 71250 # Sumy
+          - 71254
+          - 71980 # Zaporizhia
+          - 91278 # Cherkasy
+          - 90742 # Chmelnyckyk
+          - 101746 # Dnipr
+          - 101859 # Kirowhrad
+          - 393980  # Karelia
         Pietroburgo:
-        # - 54224  # Finland
-        - FI
-        - 393980
-        - 176095
-        - 155262  # Pskov
-        - 337422  # Pietroburgo
-        - 89331 # Novograd Grande
+          # - 54224  # Finland
+          - FI
+          - 393980
+          - 176095
+          - 155262  # Pskov
+          - 337422  # Pietroburgo
+          - 89331 # Novograd Grande
     regions:
       Moskva:
-        - 1029256
-      "Finland\n&\nSankt Peterburg":
-      #  - file://data/geojson/map-Pietroburgo.geojson
-        - FI
-        - 393980  # Carelia
-        - 176095
-        - 155262  # Pskov
-        - 337422  # Pietroburgo
-        - 89331 # Novograd Grande
-      "Paesi\nBaltici": ["EE", "LT", "LV"]
+        codes:
+          - 1029256
+      Pietroburgo:
+        label: "Finland\n&\nSankt Peterburg"
+        codes:
+        #  - file://data/geojson/map-Pietroburgo.geojson
+          - FI
+          - 393980  # Carelia
+          - 176095
+          - 155262  # Pskov
+          - 337422  # Pietroburgo
+          - 89331 # Novograd Grande
+      Baltics:
+        label: "Paesi\nBaltici"
+        codes: ["EE", "LT", "LV"]
       Ukraina:
+        codes:
         - file://data/geojson/map-Ucraina.geojson
       Bielarus:
+        codes:
         - BY  # 59065
       Polska:
+        codes:
         - file://data/geojson/poland-1914.geojson
   Indipendenti:
     config:
@@ -237,40 +267,35 @@ maps:
       # Svizzera:
        #- "CH"
       Portugal:
-      - "PT"
+        codes:
+        - "PT"
       Catalunya:
+        codes:
         - ES1
         - ES2
         - ES5
       Castilla:
+        codes:
         - ES3
         - ES4
         - ES6
         - MA
       Denmark:
+        codes:
         - "DK"
       Sverige:
+        codes:
         - "SE"
       Norway:
+        codes:
         - "NO"
       Benelux:
+        codes:
         - BE
         - NL
         - LU
-      Serbia:
-        - "file://data/geojson/map-Serbia.geojson"
-      Albania:
-      - AL
-      Grecia:
-      - EL3
-      - EL4  # In 1880 Creta was under the Ottoman empire
-      - EL6
-      - EL52
-      - EL53
-      - EL54
 
-
-  "Deutschland":
+  "Prussia":
     citta:
     - address: Berlino, Germania
     - address: Amburgo, Germania
@@ -298,24 +323,29 @@ maps:
       facecolor2: "#c54e25"
     country-borders: germany-1914-boundaries.geojson #"data/geojson/germany-1914.geojson"
     regions:
-      "Bayern - Baviera":
-        - FRF33
-        - FRF1
+      Bayern:
+        label: "Bayern - Baviera"
+        codes:
         - DE1
         - DE2
         - DE7 # Hesse
-      "Preussen - Prussia":
+      Prussia:
+        label: "Preussen - Prussia"
+        codes:
         - 103906 # Konigsberg
         - PL6 # Pomerania
         - PL41 # Pomerania
         - PL42
         #- PL415 # Posen #- PL417 #- PL411 #- PL418
       "Sachsen - Sassonia":
+        codes:
         - PL22 # Slesia
         - PL5 # Slesia
         - PL43
         - DED # Sachsen
-      "Rhine - Renania":
+      Rhineland:
+        label: "Rhine - Renania"
+        codes:
         - DE5
         - DE6
         - DK032
@@ -325,6 +355,7 @@ maps:
         - DEB
         - DEC # Saarland
       Berlin:
+        codes:
         - DE3
         - DE4
         - DEG
@@ -366,37 +397,45 @@ maps:
 
     regioni:
       Ungheria:
-      - HU
-      - RO1
-      - RO42
-      - SK
-      - 72489 # Trans-carpazia UA
-      - RS12
+        codes:
+        - HU
+        - RO1
+        - RO42
+        - SK
+        - 72489 # Trans-carpazia UA
+        - RS12
       Galizia:
-      - PL21
-      - PL225
-      - 130957 # Pre-carpazia PL
-      - 72380 # Leopoli
-      - 72488 # Ivano-Frankivsk
-      - 72525 # Ternopil
-      - 72526 # Chernivitsi UA
+        codes:
+        - PL21
+        - PL225
+        - 130957 # Pre-carpazia PL
+        - 72380 # Leopoli
+        - 72488 # Ivano-Frankivsk
+        - 72525 # Ternopil
+        - 72526 # Chernivitsi UA
 
     regions:
       Wien:
-      - AT
-      - ITH1
-      - ITH2 # trentino alto adige
-      "Trieste &\nDalmacija":
-      - ITH43  # GO
-      - ITH44  # TS
-      - SI
-      - HR # istria
-      - BA
+        codes:
+        - AT
+        - ITH1
+        - ITH2 # trentino alto adige
+      Trieste:
+        labels: "Trieste &\nDalmacija"
+        codes:
+        - ITH43  # GO
+        - ITH44  # TS
+        - SI
+        - HR # istria
+        # - BA
       Bohemia:
-      - CZ
+        codes:
+        - CZ
       Galizia:
+        codes:
         - file://data/geojson/map-Galizia.geojson
       Ungheria:
+        codes:
         - file://data/geojson/map-Ungheria.geojson
   "Ottomano":
     config:
@@ -429,28 +468,43 @@ maps:
         <<: *small_city
 
     regions:
-      Cipro:
-      - CY
+      Serbia:
+        codes:
+        - "file://data/geojson/map-Serbia.geojson"
+        - BA
+      Albania:
+        codes:
+        - AL
+      Grecia:
+        codes:
+        - EL3
+        - EL4  # In 1880 Creta was under the Ottoman empire
+        - EL6
+        - EL52
+        - EL53
+        - EL54
       Bulgaria:
-       - BG
-       - EL51
+        codes:
+        - BG
+        - EL51
       Romania:
-      - RO2
-      - RO3
-      - RO41
+        codes:
+        - RO2
+        - RO3
+        - RO41
       Turkiye:
-      - TR1
-      - TR21 # Tracia
-      - TR22
-      - TR4
-      - TR8
-      Egea:
-      - TR3
-      Antalia:
-      - TR5
-      - TR6
-      - TR7
+        codes:
+        - TR1
+        - TR21 # Tracia
+        - TR22
+        - TR4
+        - TR8
+        - TR3
+        - TR5
+        - TR6
+        - TR7
   France:
+    label: France
     config:
       facecolor1: "#a676c9"
       facecolor2: "#87a2c7"
@@ -485,25 +539,44 @@ maps:
       - address: Grenoble, France
         <<: *small_city
     regions:
-      "Provence & Corsica":
+      Provence:
+        label: "Provence & Corsica"
+        codes:
         - FRJ # Occitanie
-        - FRK # Auvergne
-        - FRL # Auvergne
+        - FRK1 # Auvergne
+        - FRK21 # Rhone-Alpes
+        - FRK22
+        - FRK23
+        - FRK24
+        - FRK25
+        - FRK26
+        - FRL01 # Provence-Alpes-Cote d'Azur
+        - FRL02
+        - FRL04
+        - FRL05
+        - FRL06
         - FRM # Corsica
       Bretagne:
+        codes:
         - FRG # Pays de la Loire
         - FRD
         - FRH
       Aquitaine:
+        codes:
         - FRI
       Borgougne:
+        codes:
         - FRC  # Bourgougne
         - FRE  # Haute de France
         - FRF31 # franca contea
         - FRF32
         - FRF34
         - FRF2
+        - FRF33
+        - FRF1
+
       Paris:
+        codes:
         - FR1 # paris
         - FRB # centre
   Italia:
@@ -539,34 +612,55 @@ maps:
         <<: *small_city
     regions:
       "Torino":
-      - ITC1
-      - ITC2
-      - ITC3
-      - 'ITC41'
-      - ITC48
+        label: Regno di Piemonte
+        codes:
+        - ITC1
+        - ITC2
+        - ITC3
+        - 'ITC41'
+        - ITC48
+        - FRK27
+        - FRK28
+        - FRL03
       "Venezia":
-      - ITH41
-      - ITH42
-      - 'ITC42'
-      - 'ITC43'
-      - 'ITC44'
-      - 'ITC46'
-      - 'ITC47'
-      - 'ITC49'
-      - 'ITC4A'
-      - 'ITC4B'
-      - 'ITC4C'
-      - 'ITC4D'
-      - 'ITH3'
-      - ITH5 # Emilia
+        label: "Lombardo\nVeneto"
+        codes:
+        - ITH41
+        - ITH42
+        - 'ITC42'
+        - 'ITC43'
+        - 'ITC44'
+        - 'ITC46'
+        - 'ITC47'
+        - 'ITC49'
+        - 'ITC4A'
+        - 'ITC4B'
+        - 'ITC4C'
+        - 'ITC4D'
+        - 'ITH3'
+      Toscana:
+        codes:
+        - ITH51
+        - ITH52
+        - ITH53
+        - ITH54
+        - ITI1
 
-      "Napoli\n&\nSicilia":
-      - ITF # regno di napoli
-      - ITG1 # sicilia
+      Napoli:
+        label: "Napoli\n&\nSicilia"
+        codes:
+        - ITF # regno di napoli
+        - ITG1 # sicilia
       Roma:
-      - ITI2
-      - ITI3
-      - ITI4
-      - ITI1
+        codes:
+        - ITI2
+        - ITI3
+        - ITI4
+        - ITH55
+        - ITH56
+        - ITH57
+        - ITH58
+        - ITH59
       "Sardegna":
-      - ITG2 # sardegna
+        codes:
+        - ITG2 # sardegna
