@@ -42,9 +42,9 @@ def prepare_neighbor_net(gdf: GeoDataFrame, nbr: dict):
         disjoints = gdf.geometry.touches(row.geometry, align=True)
         print("disjoint", row, disjoints)
         neighbors = gdf[~disjoints].name.tolist()
-        #neighbors = gdf[disjoints].name.tolist()
+        # neighbors = gdf[disjoints].name.tolist()
         if index in neighbors:
-            neighbors.remove(index) 
+            neighbors.remove(index)
         print(index, neighbors)
         nbr[index]["nbr"] = neighbors
 
@@ -55,7 +55,6 @@ def plot_net(nbr, ax):
         for d in v["nbr"]:
             y = nbr[d]["coords"]
             geoline(x, y).plot(ax=ax, color="red")
-
 
 
 def _get_europe():
@@ -275,17 +274,20 @@ def render(
             try:
                 point = baricenter(region)
                 if True:
-                    region_config = maps()[state_label]['regions'][region_name]
+                    region_config = maps()[state_label]["regions"][region_name]
                     region_label = region_config.get("label", region_name)
-                    region_label_options = region_config.get("label_options",{})
+                    region_label_options = region_config.get("label_options", {})
                     rotation = region_label_options.get("rotation", 0)
                     horizontalalignment = region_label_options.get("ha", "center")
                     fontsize = 20
-                    padding = [region_label_options.get("x", 0), region_label_options.get("y", 0)]
+                    padding = [
+                        region_label_options.get("x", 0),
+                        region_label_options.get("y", 0),
+                    ]
                     annotate_coords(
                         text=region_label,
                         xy=point,
-                        xytext=(i*fontsize for i in padding),
+                        xytext=(i * fontsize for i in padding),
                         horizontalalignment=horizontalalignment,
                         verticalalignment="center",
                         fontsize=fontsize,
@@ -294,7 +296,7 @@ def render(
                         # fontname="URW Bookman", color="black", fontsize=16,
                         # fontstyle="italic",
                         state_label=None,
-                        rotation = rotation,
+                        rotation=rotation,
                         textcoords="offset points",
                     )
             except:

@@ -1,4 +1,12 @@
-from . import COUNTRIES, get_board, get_state, plot_net, prepare_neighbor_net, togli_isolette, maps
+from . import (
+    COUNTRIES,
+    get_board,
+    get_state,
+    maps,
+    plot_net,
+    prepare_neighbor_net,
+    togli_isolette,
+)
 
 
 def test_save_states():
@@ -15,10 +23,8 @@ def test_save_states():
 def test_stats():
     m = maps()
     countries = len(m)
-    regions = sum(len(v['regions']) for v in m.values())
+    regions = sum(len(v["regions"]) for v in m.values())
     print(f"{countries} countries, {regions} regions")
-
-
 
 
 def test_nbr_net():
