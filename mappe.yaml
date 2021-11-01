@@ -64,7 +64,7 @@ links:
 - [Frederikshavn, Goteborg]
 - [Hirtshals, Kristiansand]
 - [graddo, turku]
-- [Calais, Dover]
+# - [Calais, Dover]
 - [Cherbourg, Bornemouth]
 - [Belfast, Portpatrick]
 - [Wexford, Fishguard]
@@ -324,27 +324,45 @@ maps:
     country-borders: germany-1914-boundaries.geojson #"data/geojson/germany-1914.geojson"
     regions:
       Bayern:
-        label: "Bayern - Baviera"
+        label: "Bayern \n (Baviera)"
+        label_options:
+          rotation: 0
+          x: -2
+          y: -2
         codes:
         - DE1
         - DE2
         - DE7 # Hesse
       Prussia:
         label: "Preussen - Prussia"
+        label_options:
+          rotation: 20
+          x: 5
+          y: 1.5
         codes:
         - 103906 # Konigsberg
         - PL6 # Pomerania
         - PL41 # Pomerania
         - PL42
         #- PL415 # Posen #- PL417 #- PL411 #- PL418
-      "Sachsen - Sassonia":
+      Sachsen:
+        label: "Sachsen (Sassonia)"
+        label_options:
+          y: -1
+          x: 2
+          rotation: -30
+
         codes:
         - PL22 # Slesia
         - PL5 # Slesia
         - PL43
         - DED # Sachsen
       Rhineland:
-        label: "Rhine - Renania"
+        label: "Rhine (Renania)"
+        label_options:
+          rotation: 80
+          y: -3
+          x: -3
         codes:
         - DE5
         - DE6
@@ -355,6 +373,10 @@ maps:
         - DEB
         - DEC # Saarland
       Berlin:
+        label_options:
+          rotation: 0
+          x: 0
+          y: 1.5
         codes:
         - DE3
         - DE4

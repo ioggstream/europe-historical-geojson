@@ -35,13 +35,17 @@ COUNTRIES = tuple(maps().keys())
 
 
 def prepare_neighbor_net(gdf: GeoDataFrame, nbr: dict):
-    for row in gdf.name:
-        index = row
+    for index in gdf.name:
         row = gdf[gdf.name == index]
         print(index)
         nbr[index] = {"coords": baricenter(row)}
-        neighbors = gdf[~gdf.geometry.disjoint(row.geometry)].name.tolist()
-        neighbors.remove(index)
+        disjoints = gdf.geometry.touches(row.geometry, align=True)
+        print("disjoint", row, disjoints)
+        neighbors = gdf[~disjoints].name.tolist()
+        #neighbors = gdf[disjoints].name.tolist()
+        if index in neighbors:
+            neighbors.remove(index) 
+        print(index, neighbors)
         nbr[index]["nbr"] = neighbors
 
 
@@ -271,18 +275,27 @@ def render(
             try:
                 point = baricenter(region)
                 if True:
-                    region_label = maps()[state_label]['regions'][region_name].get("label", region_name)
+                    region_config = maps()[state_label]['regions'][region_name]
+                    region_label = region_config.get("label", region_name)
+                    region_label_options = region_config.get("label_options",{})
+                    rotation = region_label_options.get("rotation", 0)
+                    horizontalalignment = region_label_options.get("ha", "center")
+                    fontsize = 20
+                    padding = [region_label_options.get("x", 0), region_label_options.get("y", 0)]
                     annotate_coords(
                         text=region_label,
                         xy=point,
-                        horizontalalignment="center",
+                        xytext=(i*fontsize for i in padding),
+                        horizontalalignment=horizontalalignment,
                         verticalalignment="center",
-                        fontsize=20,
+                        fontsize=fontsize,
                         color="white",
                         fontname=FONT_GOTHIC,
                         # fontname="URW Bookman", color="black", fontsize=16,
                         # fontstyle="italic",
                         state_label=None,
+                        rotation = rotation,
+                        textcoords="offset points",
                     )
             except:
                 raise
