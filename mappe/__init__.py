@@ -35,11 +35,13 @@ COUNTRIES = tuple(maps().keys())
 
 
 def prepare_neighbor_net(gdf: GeoDataFrame, nbr: dict):
-    for index in gdf.name:
-        row = gdf[gdf.name == index]
+    for index, row in gdf.iterrows():
+        name = row[1]
+        index = name
+        region = gdf[gdf.name == index]
         print(index)
-        nbr[index] = {"coords": baricenter(row)}
-        disjoints = gdf.geometry.touches(row.geometry, align=True)
+        nbr[index] = {"coords": baricenter(region)}
+        disjoints = gdf.geometry.disjoint(row.geometry)
         print("disjoint", row, disjoints)
         neighbors = gdf[~disjoints].name.tolist()
         # neighbors = gdf[disjoints].name.tolist()
@@ -47,6 +49,7 @@ def prepare_neighbor_net(gdf: GeoDataFrame, nbr: dict):
             neighbors.remove(index)
         print(index, neighbors)
         nbr[index]["nbr"] = neighbors
+        nbr[index]["count"] = len(neighbors)
 
 
 def plot_net(nbr, ax):
@@ -153,7 +156,7 @@ def get_polygons(label, retry=0):
 
     for db, year in (("nuts", 2021), ("countries", 2020)):
         ret = get(
-            f"{base}/{db}/distribution/{label}-region-20m-{coord_type}-{year}.geojson"
+            f"{base}/{db}/distribution/{label}-region-10m-{coord_type}-{year}.geojson"
         )
         if ret.status_code == 200:
             break
@@ -263,7 +266,7 @@ def render(
         if plot_state_labels_only:
             plot_cities = False
             plot_labels = False
-    # import pdb; pdb.set_trace()
+
     for region_name in empire.name:
         region = empire[empire.name == region_name]
 
@@ -272,33 +275,7 @@ def render(
 
         if plot_labels:
             try:
-                point = baricenter(region)
-                if True:
-                    region_config = maps()[state_label]["regions"][region_name]
-                    region_label = region_config.get("label", region_name)
-                    region_label_options = region_config.get("label_options", {})
-                    rotation = region_label_options.get("rotation", 0)
-                    horizontalalignment = region_label_options.get("ha", "center")
-                    fontsize = 20
-                    padding = [
-                        region_label_options.get("x", 0),
-                        region_label_options.get("y", 0),
-                    ]
-                    annotate_coords(
-                        text=region_label,
-                        xy=point,
-                        xytext=(i * fontsize for i in padding),
-                        horizontalalignment=horizontalalignment,
-                        verticalalignment="center",
-                        fontsize=fontsize,
-                        color="white",
-                        fontname=FONT_GOTHIC,
-                        # fontname="URW Bookman", color="black", fontsize=16,
-                        # fontstyle="italic",
-                        state_label=None,
-                        rotation=rotation,
-                        textcoords="offset points",
-                    )
+                annotate_region(region)
             except:
                 raise
 
@@ -322,6 +299,37 @@ def render(
         empire.plot(ax=ax, edgecolor="black", facecolor="none", linewidth=0, alpha=1)
 
     return empire
+
+
+def annotate_region(region, text=None, xytext=None, fontname=FONT_GOTHIC):
+    state_label = region.state.values[0]
+    region_name = region.name.values[0]
+    point = baricenter(region)
+    region_config = maps()[state_label]["regions"][region_name]
+    region_label = region_config.get("label", region_name)
+    region_label_options = region_config.get("label_options", {})
+    rotation = region_label_options.get("rotation", 0)
+    horizontalalignment = region_label_options.get("ha", "center")
+    fontsize = 20
+    padding = [
+                    region_label_options.get("x", 0),
+                    region_label_options.get("y", 0),
+                ]
+    annotate_coords(
+                    text=text or region_label,
+                    xy=point,
+                    xytext=(i * fontsize for i in padding) if xytext is None else xytext,
+                    horizontalalignment=horizontalalignment,
+                    verticalalignment="center",
+                    fontsize=fontsize,
+                    color="white",
+                    fontname=fontname,
+                    # fontname="URW Bookman", color="black", fontsize=16,
+                    # fontstyle="italic",
+                    state_label=None,
+                    rotation=rotation,
+                    textcoords="offset points",
+                )
 
 
 def render_state(
@@ -454,7 +462,7 @@ def render_links(ax):
         if all(x is not None for x in (src, dst)):
             line = geoline(src, dst)
             line = line.set_crs(EPSG_4326_WGS84).to_crs(MY_CRS)
-            line.plot(ax=ax, color="black", linewidth=2)
+            line.plot(ax=ax, color="black", linewidth=2, linestyle="dotted")
 
 
 def render_board(countries=COUNTRIES, background=False):
@@ -473,8 +481,8 @@ def render_board(countries=COUNTRIES, background=False):
         pool.map(partial(render_state, ax=full_board), countries)
 
     # render_seas(ax=full_board)
-
-    if False:
+    render_net = True
+    if render_net:
         nbr = {}
         df = get_state(COUNTRIES[0])
         for x in COUNTRIES[1:]:
@@ -482,6 +490,10 @@ def render_board(countries=COUNTRIES, background=False):
         prepare_neighbor_net(df, nbr)
         plot_net(nbr, risk_board)
         df.plot(ax=risk_board)
+
+        for region_id, values in nbr.items():
+            annotate_coords(values['coords'], f"w: {values['count']}",
+                                 textcoords="offset points", xytext=(-20,-20))
 
     # add_basemap(full_board, crs=str(MY_CRS), )
     fig.savefig("/tmp/risk-board.png", dpi=300, bbox_inches="tight", transparent=True)
@@ -493,7 +505,8 @@ def render_board(countries=COUNTRIES, background=False):
 def get_board():
     fig, risk_board = plt.subplots(1, 1)
     plt.tight_layout(pad=0.05)
-    fig.set_size_inches(cm2inch(29 * 2.2, 21 * 2.2), forward=True)
+    scale = 2.6
+    fig.set_size_inches(cm2inch(80, 50), forward=True)
     fig.set_dpi(300)
     risk_board.set_axis_off()
     return fig, risk_board

@@ -64,7 +64,7 @@ links:
 - [Frederikshavn, Goteborg]
 - [Hirtshals, Kristiansand]
 - [graddo, turku]
-# - [Calais, Dover]
+- ["Sangatte, France", "Dover, United kingdom"]
 - [Cherbourg, Bornemouth]
 - [Belfast, Portpatrick]
 - [Wexford, Fishguard]
@@ -86,7 +86,7 @@ maps:
     # translate: [-1.0, -2.0]
     citta:
       - address: London, UK
-      - address: Manchester, UK
+      - address: Liverpool, UK
       - address: Dublin, Ireland
     regions:
       Scotland:
@@ -204,14 +204,20 @@ maps:
           - 89331 # Novograd Grande
       Baltics:
         label: "Paesi\nBaltici"
+        label_options:
+          y: -2
         codes: ["EE", "LT", "LV"]
       Ukraina:
         codes:
         - file://data/geojson/map-Ucraina.geojson
       Bielarus:
+        label_options:
+          y: -2
         codes:
         - BY  # 59065
       Polska:
+        label_options:
+          y: -2
         codes:
         - file://data/geojson/poland-1914.geojson
   Indipendenti:
@@ -264,12 +270,12 @@ maps:
       - address: Pamplona, Espana
         <<: *small_city
     regions:
-      # Svizzera:
-       #- "CH"
       Portugal:
         codes:
         - "PT"
       Catalunya:
+        label_options:
+          rotation: 45
         codes:
         - ES1
         - ES2
@@ -284,9 +290,11 @@ maps:
         codes:
         - "DK"
       Sverige:
+        label: "Sverige\n(Svezia)"
         codes:
         - "SE"
       Norway:
+        label: "Norge\n(Norvegia)"
         codes:
         - "NO"
       Benelux:
@@ -437,20 +445,39 @@ maps:
         - 72526 # Chernivitsi UA
 
     regions:
-      Wien:
+      Austria:
+        label_options:
+          x: 2
+          y: 1
         codes:
         - AT
         - ITH1
         - ITH2 # trentino alto adige
-      Trieste:
-        labels: "Trieste &\nDalmacija"
-        codes:
         - ITH43  # GO
         - ITH44  # TS
-        - SI
-        - HR # istria
+        - SI04
+        - HR036 # Istria
+      Dalmacija:
+        label: "Dalmacija"
+        label_options:
+          y: 2
+          x: 1
+        codes:
+        # - HR # istria
+        - SI03
+        - HR02
+        - HR05
+        - HR06
+        - HR031
+        - HR032
+        - HR033
+        - HR034
+        - HR035
+        - HR037
         # - BA
       Bohemia:
+        label_options:
+          x: 2
         codes:
         - CZ
       Galizia:
@@ -495,6 +522,8 @@ maps:
         - "file://data/geojson/map-Serbia.geojson"
         - BA
       Albania:
+        label_options:
+          rotation: 90
         codes:
         - AL
       Grecia:
@@ -510,6 +539,8 @@ maps:
         - BG
         - EL51
       Romania:
+        label_options:
+          y: -2
         codes:
         - RO2
         - RO3
@@ -584,6 +615,8 @@ maps:
         - FRD
         - FRH
       Aquitaine:
+        label_options:
+          rotation: 80
         codes:
         - FRI
       Borgougne:
@@ -633,8 +666,8 @@ maps:
       - address: Bergamo, Italia
         <<: *small_city
     regions:
-      "Torino":
-        label: Regno di Piemonte
+      Torino:
+        label: Piemonte
         codes:
         - ITC1
         - ITC2
@@ -646,6 +679,9 @@ maps:
         - FRL03
       "Venezia":
         label: "Lombardo\nVeneto"
+        label_options:
+          x: 0
+          y: -1
         codes:
         - ITH41
         - ITH42
@@ -661,6 +697,8 @@ maps:
         - 'ITC4D'
         - 'ITH3'
       Toscana:
+        label_options:
+          rotation: -45
         codes:
         - ITH51
         - ITH52
