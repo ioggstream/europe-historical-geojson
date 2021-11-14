@@ -24,6 +24,14 @@ seas = lambda: config()["seas"]
 links = lambda: config()["links"]
 
 
+
+import os
+
+def get_cache_filename(state):
+    suffix = os.path.basename(os.environ.get("MAPPE_YAML", "mappe.yaml"))
+    return f"tmp-{suffix}-{state}.geojson"
+    
+
 def get_config(fpath="mappe.yaml"):
     config =  yaml.safe_load(Path(fpath).read_text())
     config.maps = config["maps"]

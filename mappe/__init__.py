@@ -174,30 +174,30 @@ def get_regions(state_label) -> dict:
     return {k: join_areas(v["codes"]) for k, v in regions.items()}
 
 
-def get_state(state_label, cache=True) -> GeoDataFrame:
+def get_state(state_name, cache=True) -> GeoDataFrame:
     """:return a WGS84 geodataframe eventually intersected with the rest"""
-    f = state_label.replace("\n", " ")
-    cache_file = Path(f"tmp-{f}.geojson")
+    f = state_name.replace("\n", " ")
+    cache_file = Path(get_cache_filename(f))
     if cache and cache_file.exists():
         log.warning(f"Reading from {cache_file}")
         ret = gpd.read_file(cache_file.open())
         assert ret.crs == EPSG_4326_WGS84
         return ret
-    regions = list(get_regions(state_label).items())
+    regions = list(get_regions(state_name).items())
     n, t = regions[0]
 
-    df = DataFrame({"name": [n], "state": [state_label]})
+    df = DataFrame({"name": [n], "state": [state_name]})
     ret = gpd.GeoDataFrame(df, geometry=t, crs=EPSG_4326_WGS84)
     for n, t in regions[1:]:
         ret = ret.append(
             gpd.GeoDataFrame(
-                DataFrame({"name": [n], "state": [state_label]}),
+                DataFrame({"name": [n], "state": [state_name]}),
                 geometry=t,
                 crs=EPSG_4326_WGS84,
             )
         )
     ret = ret.reset_index()
-    state_config = maps()[state_label]
+    state_config = maps()[state_name]
     translate = state_config.get("translate", [0, 0])
     scale = state_config.get("scale", [1.0, 1.0])
 

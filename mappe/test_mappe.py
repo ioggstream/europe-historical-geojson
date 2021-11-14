@@ -15,6 +15,8 @@ from . import (
     MY_CRS,
     ctx
 )
+from .utils import get_cache_filename
+
 
 def test_render_background_ok():
     fig, ax = get_board()
@@ -34,7 +36,8 @@ def test_save_states():
             togli_isolette(df, soglia_isolette)
         except:
             pass
-        df.to_file(f"tmp-{f}.geojson", driver="GeoJSON")
+        fpath = get_cache_filename(c)
+        df.to_file(fpath, driver="GeoJSON")
 
 
 def test_stats():

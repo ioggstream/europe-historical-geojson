@@ -327,6 +327,35 @@ maps:
         - BE
         - NL
         - LU
+      Serbia:
+        codes:
+        - "file://data/geojson/map-Serbia.geojson"
+      Albania:
+        label_options:
+          rotation: 90
+        codes:
+        - AL
+      Grecia:
+        codes:
+        - EL3
+        - EL4  # In 1880 Creta was under the Ottoman empire
+        - EL6
+        - EL52
+        - EL53
+        - EL54
+        - CY
+      Bulgaria:
+        codes:
+        - BG
+        - EL51
+      Romania:
+        label_options:
+          y: -2
+        codes:
+        - RO2
+        - RO3
+        - RO41
+
 
   "Prussia":
     citta:
@@ -482,8 +511,8 @@ maps:
         - ITH44  # TS
         - SI04
         - HR036 # Istria
-      Dalmacija:
-        label: "Dalmacija"
+      Bosnia:
+        label: "Bosnia"
         label_options:
           y: 2
           x: 1
@@ -499,7 +528,8 @@ maps:
         - HR034
         - HR035
         - HR037
-        # - BA
+        - BA
+
       Bohemia:
         label_options:
           x: 2
@@ -511,25 +541,6 @@ maps:
       Ungheria:
         codes:
         - file://data/geojson/map-Ungheria.geojson
-      "Venezia":
-        label: "Lombardo\nVeneto"
-        label_options:
-          x: -2
-          y: -1
-        codes:
-        - ITH41
-        - ITH42
-        - 'ITC42'
-        - 'ITC43'
-        - 'ITC44'
-        - 'ITC46'
-        - 'ITC47'
-        - 'ITC49'
-        - 'ITC4A'
-        - 'ITC4B'
-        - 'ITC4C'
-        - 'ITC4D'
-        - 'ITH3'
 
   "Ottomano":
     config:
@@ -562,35 +573,6 @@ maps:
         <<: *small_city
 
     regions:
-      Serbia:
-        codes:
-        - "file://data/geojson/map-Serbia.geojson"
-        - BA
-      Albania:
-        label_options:
-          rotation: 90
-        codes:
-        - AL
-      Grecia:
-        codes:
-        - EL3
-        - EL4  # In 1880 Creta was under the Ottoman empire
-        - EL6
-        - EL52
-        - EL53
-        - EL54
-        - CY
-      Bulgaria:
-        codes:
-        - BG
-        - EL51
-      Romania:
-        label_options:
-          y: -2
-        codes:
-        - RO2
-        - RO3
-        - RO41
       Turkiye:
         codes:
         - TR1
@@ -727,20 +709,37 @@ maps:
         - FRK27
         - FRK28
         - FRL03
-      Toscana:
+      Venezia:
+        label: "Lombardo\nVeneto"
         label_options:
-          rotation: -50
-          y: 2
           x: -2
+          y: -1
         codes:
+        - ITH41
+        - ITH42
         - ITH51
         - ITH52
         - ITH53
         - ITH54
-        - ITI1
+        - ITH55
+        - ITH56
+        - ITH57
+        - ITH58
+        - ITH59
 
+        - 'ITC42'
+        - 'ITC43'
+        - 'ITC44'
+        - 'ITC46'
+        - 'ITC47'
+        - 'ITC49'
+        - 'ITC4A'
+        - 'ITC4B'
+        - 'ITC4C'
+        - 'ITC4D'
+        - 'ITH3'
       Napoli:
-        label: "Regno\ndelle due\nSicilie"
+        label: "Napoli\ne Sicilia"
         label_options:
           y: 2
           x: -1
@@ -755,11 +754,7 @@ maps:
         - ITI2
         - ITI3
         - ITI4
-        - ITH55
-        - ITH56
-        - ITH57
-        - ITH58
-        - ITH59
+        - ITI1
       "Sardegna":
         label_options:
           rotation: 90
