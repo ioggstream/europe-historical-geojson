@@ -56,8 +56,8 @@ seas:
   - Golfo di Biscaglia
   - Stretto di Gibilterra
 links:
-- [cagliari, palermo]
-- [santa teresa di gallura, marsiglia]
+- [Cagliari, Trapani]
+- ["porto torres, Italia", "Le Lavandou, France"]
 - [edinburg, bergen]
 - [smirne, atene]
 - [valona, otranto]
@@ -68,6 +68,9 @@ links:
 - [Cherbourg, Bornemouth]
 - [Belfast, Portpatrick]
 - [Wexford, Fishguard]
+- [Ancona, Zara Vecchia]
+- ["Lowestoft, UK", "kijkduin, The Netherlands" ]
+- ["Cala Rajada, Baleares, Espana", "Porto Palma, Italia"]
 
 maps:
   Neutrali:
@@ -88,6 +91,21 @@ maps:
       - address: London, UK
       - address: Liverpool, UK
       - address: Dublin, Ireland
+      - address: Edinburg, UK
+        <<: *small_city
+      - address: Cardiff, UK
+        <<: *small_city
+      - address: Belfast, UK
+        <<: *small_city
+      - address: Glasgow, UK
+        <<: *small_city
+      - address: Manchester, UK
+        <<: *small_city
+      - address: Leeds, UK
+        <<: *small_city
+
+
+
     regions:
       Scotland:
         label: Scotland
@@ -103,6 +121,9 @@ maps:
         - UKD
         - UKE
       London:
+        label_options:
+          y: 1
+          x: 1
         codes:
         - UKH
         - UKI
@@ -121,15 +142,23 @@ maps:
       - address: Mosca, Russia
       - address: Sankt Petersbourg, Russia
       - address: Varsavia, Poland
-      - address: Lipeck, Russia
-        <<: *small_city
       - address: Orel, Russia
         <<: *small_city
       - address: Brjansk, Russia
         <<: *small_city
-      - address: Vladimir, Russia
-        <<: *small_city
+      #- address: Lipeck, Russia
+      #  <<: *small_city
+      #- address: Vladimir, Russia
+      #  <<: *small_city
+      #- address: Jaroslavl, Russia
+      #  <<: *small_city
       - address: Mahilev, Belarus
+        <<: *small_city
+      - address: Tver, Russia
+        <<: *small_city
+      - address: Kaluga, Russia
+        <<: *small_city
+      - address: Penza, Russia
         <<: *small_city
       - address: Minsk, Belarus
         <<: *small_city
@@ -138,14 +167,6 @@ maps:
       - address: Vilnius, Lithuania
         <<: *small_city
       - address: Riga, Latvia
-        <<: *small_city
-      - address: Tver, Russia
-        <<: *small_city
-      - address: Kaluga, Russia
-        <<: *small_city
-      - address: Penza, Russia
-        <<: *small_city
-      - address: Jaroslavl, Russia
         <<: *small_city
       - address: Helsinki, Finland
         <<: *small_city
@@ -271,11 +292,17 @@ maps:
         <<: *small_city
     regions:
       Portugal:
+        label_options:
+          rotation: 90
+          y: -1
         codes:
         - "PT"
       Catalunya:
+        label: "Catalunya\ny Baleares"
         label_options:
-          rotation: 45
+          rotation: 50
+          x: 1
+          y: 2
         codes:
         - ES1
         - ES2
@@ -295,6 +322,8 @@ maps:
         - "SE"
       Norway:
         label: "Norge\n(Norvegia)"
+        label_options:
+          x: -2
         codes:
         - "NO"
       Benelux:
@@ -486,6 +515,26 @@ maps:
       Ungheria:
         codes:
         - file://data/geojson/map-Ungheria.geojson
+      "Venezia":
+        label: "Lombardo\nVeneto"
+        label_options:
+          x: -2
+          y: -1
+        codes:
+        - ITH41
+        - ITH42
+        - 'ITC42'
+        - 'ITC43'
+        - 'ITC44'
+        - 'ITC46'
+        - 'ITC47'
+        - 'ITC49'
+        - 'ITC4A'
+        - 'ITC4B'
+        - 'ITC4C'
+        - 'ITC4D'
+        - 'ITH3'
+
   "Ottomano":
     config:
       facecolor1: "#76cfe7"
@@ -534,6 +583,7 @@ maps:
         - EL52
         - EL53
         - EL54
+        - CY
       Bulgaria:
         codes:
         - BG
@@ -609,6 +659,7 @@ maps:
         - FRL05
         - FRL06
         - FRM # Corsica
+        - 9407 # Andorra
       Bretagne:
         codes:
         - FRG # Pays de la Loire
@@ -668,6 +719,9 @@ maps:
     regions:
       Torino:
         label: Piemonte
+        label_options:
+          y: -1
+          rotation: 20
         codes:
         - ITC1
         - ITC2
@@ -677,28 +731,11 @@ maps:
         - FRK27
         - FRK28
         - FRL03
-      "Venezia":
-        label: "Lombardo\nVeneto"
-        label_options:
-          x: 0
-          y: -1
-        codes:
-        - ITH41
-        - ITH42
-        - 'ITC42'
-        - 'ITC43'
-        - 'ITC44'
-        - 'ITC46'
-        - 'ITC47'
-        - 'ITC49'
-        - 'ITC4A'
-        - 'ITC4B'
-        - 'ITC4C'
-        - 'ITC4D'
-        - 'ITH3'
       Toscana:
         label_options:
-          rotation: -45
+          rotation: -50
+          y: 2
+          x: -2
         codes:
         - ITH51
         - ITH52
@@ -707,11 +744,17 @@ maps:
         - ITI1
 
       Napoli:
-        label: "Napoli\n&\nSicilia"
+        label: "Regno delle\ndue Sicilie"
+        label_options:
+          y: 2
+          x: -1
         codes:
         - ITF # regno di napoli
         - ITG1 # sicilia
       Roma:
+        label_options:
+          rotation: 45
+          y: -2
         codes:
         - ITI2
         - ITI3
@@ -722,5 +765,7 @@ maps:
         - ITH58
         - ITH59
       "Sardegna":
+        label_options:
+          rotation: 90
         codes:
         - ITG2 # sardegna

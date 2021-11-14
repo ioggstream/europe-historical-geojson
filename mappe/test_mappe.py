@@ -10,16 +10,28 @@ from . import (
     plot_net,
     prepare_neighbor_net,
     togli_isolette,
-    _get_europe
+    _get_europe,
+    add_basemap,
+    MY_CRS,
+    ctx
 )
+
+def test_render_background_ok():
+    fig, ax = get_board()
+    eu = _get_europe().to_crs(MY_CRS)
+    eu.plot(ax=ax, color="none")
+
+    add_basemap(ax, crs=str(MY_CRS), source=ctx.providers.Esri.WorldPhysical)
+    fig.savefig("/tmp/terrain-board.png", dpi=300, transparent=True)
 
 
 def test_save_states():
     for c in COUNTRIES:
         f = c.replace("\n", " ")
         df = get_state(c, cache=False)
+        soglia_isolette = 0.2
         try:
-            togli_isolette(df, 0.4)
+            togli_isolette(df, soglia_isolette)
         except:
             pass
         df.to_file(f"tmp-{f}.geojson", driver="GeoJSON")

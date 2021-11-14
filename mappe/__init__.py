@@ -23,8 +23,11 @@ from shapely.ops import cascaded_union
 from .constants import *
 from .utils import *
 
-FONT_GOTHIC = "eufm10"
+FONT_REGION = "eufm10"
+FONT_ARIAL = "DejaVu Sans"
 
+FONT_REGION = "Liberation Sans"
+FONT_REGION_COLOR = "black"
 matplotlib.rcParams["pdf.fonttype"] = 42
 
 log = logging.getLogger(__name__)
@@ -245,43 +248,43 @@ def render(
     my_crs = MY_CRS
 
     state_label = gdfm.state.values[0]
-
+    state_label_font_size = 48
     # FIXME: there's a problem somewhere with the German empire.
     if state_label != "Deutschland":
         empire = intersect(empire, _get_europe())
 
     state_archive[state_label] = empire
-    if plot_state_labels:
-        state_center = baricenter(empire.to_crs(my_crs))
-        plt.annotate(
-            text=state_label,
-            xy=state_center,
-            horizontalalignment="center",
-            verticalalignment="center",
-            fontsize=48,
-            color="white",
-            fontname=FONT_GOTHIC,
-            alpha=0.7,
-        )
-        if plot_state_labels_only:
-            plot_cities = False
-            plot_labels = False
+    if plot_state_labels_only:
+        plot_cities = False
+        plot_labels = False
+
+    state_center = baricenter(empire.to_crs(my_crs))
+    ax.annotate(
+        text=state_label,
+        xy=state_center,
+        fontsize=state_label_font_size,
+        horizontalalignment="center",
+        verticalalignment="center",
+        color="white",
+        fontname=FONT_REGION,
+        alpha=0.7 if plot_state_labels else 0,
+    )
 
     for region_name in empire.name:
         region = empire[empire.name == region_name]
-
-        togli_isolette(region, 0.4)
+        soglia=0.4
+        togli_isolette(region, 0.3)
         empire[empire.name == region_name] = region
 
         if plot_labels:
             try:
-                annotate_region(region)
+                annotate_region(region, ax=ax)
             except:
                 raise
 
     if plot_cities:
         for city in cities:
-            annotate_location(**city, state_label=state_label)
+            annotate_location(**city, state_label=state_label, ax=ax)
 
     # Limit the map to EU and convert to 3857 to improve printing.
     # empire = gpd.overlay(empire, _get_europe(), how='intersection')
@@ -296,12 +299,12 @@ def render(
             ax=ax, edgecolor="black", facecolor=facecolor1, linewidth=0, alpha=0.5
         )
     else:
-        empire.plot(ax=ax, edgecolor="black", facecolor="none", linewidth=0, alpha=1)
+        empire.plot(ax=ax, edgecolor="black", facecolor="none", linewidth=0, alpha=0)
 
     return empire
 
 
-def annotate_region(region, text=None, xytext=None, fontname=FONT_GOTHIC):
+def annotate_region(region, text=None, xytext=None, fontname=FONT_REGION, color=FONT_REGION_COLOR, ax=plt):
     state_label = region.state.values[0]
     region_name = region.name.values[0]
     point = baricenter(region)
@@ -315,14 +318,14 @@ def annotate_region(region, text=None, xytext=None, fontname=FONT_GOTHIC):
                     region_label_options.get("x", 0),
                     region_label_options.get("y", 0),
                 ]
-    annotate_coords(
+    annotate_coords(ax=ax,
                     text=text or region_label,
                     xy=point,
                     xytext=(i * fontsize for i in padding) if xytext is None else xytext,
                     horizontalalignment=horizontalalignment,
                     verticalalignment="center",
                     fontsize=fontsize,
-                    color="white",
+                    color=color,
                     fontname=fontname,
                     # fontname="URW Bookman", color="black", fontsize=16,
                     # fontstyle="italic",
@@ -376,13 +379,6 @@ def test_render_labels_ok():
     fig_label.savefig("label-board.eps", dpi=300, transparent=True, format="eps")
 
 
-def test_render_background_ok():
-    fig, ax = get_board()
-    eu = _get_europe().to_crs(MY_CRS)
-    eu.plot(ax=ax, color="none")
-
-    add_basemap(ax, crs=str(MY_CRS), source=ctx.providers.Esri.WorldPhysical)
-    fig.savefig("terrain-board.png", dpi=300, transparent=True)
 
 
 def test_render_background_masked_ok():
@@ -462,26 +458,30 @@ def render_links(ax):
         if all(x is not None for x in (src, dst)):
             line = geoline(src, dst)
             line = line.set_crs(EPSG_4326_WGS84).to_crs(MY_CRS)
-            line.plot(ax=ax, color="black", linewidth=2, linestyle="dotted")
+            line.plot(ax=ax, color="black", linewidth=2, linestyle="dashed")
 
 
 def render_board(countries=COUNTRIES, background=False):
-    fig, risk_board = get_board()
+    fig_risk, risk_board = get_board()
     fig_label, label_board = get_board()
     fig_full, full_board = get_board()
+    fig_links, links_board = get_board()
     if background:
         eu = _get_europe().to_crs(MY_CRS)
         eu.plot(ax=risk_board, facecolor="lightblue")
 
     countries = countries or COUNTRIES
     render_links(ax=full_board)
+    render_links(ax=links_board)
 
     with Pool(processes=20) as pool:
-        pool.map(partial(render_state, ax=risk_board, plot_labels=False), countries)
-        pool.map(partial(render_state, ax=full_board), countries)
+        pool.map(partial(render_state, ax=risk_board, plot_geo=True, plot_labels=False, plot_cities=False, plot_state_labels=False), countries)
+        pool.map(partial(render_state, ax=full_board, plot_geo=True, plot_labels=True, plot_cities=True, plot_state_labels=False), countries)
+        pool.map(partial(render_state, ax=label_board, plot_geo=False, plot_labels=True, plot_cities=True,  plot_state_labels=False), countries)
+        pool.map(partial(render_state, ax=links_board, plot_geo=False, plot_labels=False, plot_cities=False, plot_state_labels=False), countries)
 
     # render_seas(ax=full_board)
-    render_net = True
+    render_net = False
     if render_net:
         nbr = {}
         df = get_state(COUNTRIES[0])
@@ -496,20 +496,21 @@ def render_board(countries=COUNTRIES, background=False):
                                  textcoords="offset points", xytext=(-20,-20))
 
     # add_basemap(full_board, crs=str(MY_CRS), )
-    fig.savefig("/tmp/risk-board.png", dpi=300, bbox_inches="tight", transparent=True)
-    fig_full.savefig(
-        "/tmp/full-board.png", dpi=300, bbox_inches="tight", transparent=True
-    )
+    cfg = dict(dpi=300, bbox_inches="tight", transparent=True)
+    fig_risk.savefig("/tmp/risk-board.png", **cfg)
+    fig_label.savefig("/tmp/label-board.png", **cfg)
+    fig_full.savefig("/tmp/full-board.png", **cfg)
+    fig_links.savefig("/tmp/links-board.png", **cfg)
 
 
 def get_board():
-    fig, risk_board = plt.subplots(1, 1)
+    fig, board = plt.subplots(1, 1)
     plt.tight_layout(pad=0.05)
     scale = 2.6
-    fig.set_size_inches(cm2inch(80, 50), forward=True)
+    fig.set_size_inches(cm2inch(90, 60), forward=True)
     fig.set_dpi(300)
-    risk_board.set_axis_off()
-    return fig, risk_board
+    board.set_axis_off()
+    return fig, board
 
 
 def test_unite_maps():

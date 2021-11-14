@@ -18,11 +18,18 @@ log = logging.getLogger(__name__)
 
 LARGE_CITY = "\u2299"  # "◉"
 
-config = lambda: yaml.safe_load(Path("mappe.yaml").read_text())
+config = lambda: yaml.safe_load(Path(os.environ.get("MAPPE_YAML", "mappe.yaml")).read_text())
 maps = lambda: config()["maps"]
 seas = lambda: config()["seas"]
 links = lambda: config()["links"]
 
+
+def get_config(fpath="mappe.yaml"):
+    config =  yaml.safe_load(Path(fpath).read_text())
+    config.maps = config["maps"]
+    config.maps = config["seas"]
+    config.maps = config["links"]
+    return config
 
 def annotate_location(
     address,
@@ -30,6 +37,7 @@ def annotate_location(
     state_label=None,
     fontsize=24,
     fontname="DejaVu Serif",
+    ax=plt,
     **kwargs,
 ):
 
@@ -44,11 +52,12 @@ def annotate_location(
         state_label=state_label,
         fontsize=fontsize,
         fontname=fontname,
+        ax=ax,
         **kwargs,
     )
 
 
-def annotate_coords(xy, text, state_label=None, **kwargs):
+def annotate_coords(xy, text, state_label=None, ax=plt, **kwargs):
     translate = (0, 0)
     # adjust = [-1863.686871749116, -252.13592858798802]
     adjust = [0, 0]
@@ -60,7 +69,7 @@ def annotate_coords(xy, text, state_label=None, **kwargs):
     map_coords = point_coords(*coords)
     map_coords = tuple(map(add, map_coords, adjust))
     # Annotate the given point with centered alignment.
-    plt.annotate(text=text, xy=map_coords, ha="center", va="center", **kwargs)
+    ax.annotate(text=text, xy=map_coords, ha="center", va="center", **kwargs)
 
 
 def geolocate(address):
