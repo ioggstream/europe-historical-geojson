@@ -39,7 +39,7 @@ constants:
     size: 24
     text: "\u2299"
   small_city: &small_city
-    size: 10
+    size: 8
     text: "●"
 
 seas:
@@ -126,6 +126,10 @@ maps:
         codes:
         - IE
         - UKN
+      Cipro:
+        codes:
+        - CY
+
   Russia:
     config:
       facecolor1: darkred
@@ -343,7 +347,6 @@ maps:
         - EL52
         - EL53
         - EL54
-        - CY
       Bulgaria:
         codes:
         - BG
@@ -352,7 +355,12 @@ maps:
         label_options:
           y: -2
         codes:
-        - RO2
+        - RO211
+        - RO212
+        - RO213
+        - RO214
+        - RO216
+        - RO22
         - RO3
         - RO41
 
@@ -492,6 +500,7 @@ maps:
         codes:
         - PL21
         - PL225
+        - RO215
         - 130957 # Pre-carpazia PL
         - 72380 # Leopoli
         - 72488 # Ivano-Frankivsk
@@ -538,6 +547,7 @@ maps:
       Galizia:
         codes:
         - file://data/geojson/map-Galizia.geojson
+        - RO215
       Ungheria:
         codes:
         - file://data/geojson/map-Ungheria.geojson
@@ -546,13 +556,6 @@ maps:
     config:
       facecolor1: "#76cfe7"
       facecolor2: "#6d7054"
-    tmp:
-      Serbia:
-        - RS2
-        - RS11
-        - MK
-        - ME
-        - 2088990
     citta:
       - address: Istanbul, Turchia
       - address: Atene, Grecia
@@ -580,7 +583,11 @@ maps:
         - TR22
         - TR4
         - TR8
+      Egea:
+        codes:
         - TR3
+      Antalya:
+        codes:
         - TR5
         - TR6
         - TR7
@@ -636,6 +643,10 @@ maps:
         - FRL04
         - FRL05
         - FRL06
+        - FRK27 # Savoy
+        - FRK28 # Savoy
+        - FRL03 # Nizza
+
         - FRM # Corsica
         - 9407 # Andorra
       Bretagne:
@@ -706,9 +717,6 @@ maps:
         - ITC3
         - 'ITC41'
         - ITC48
-        - FRK27
-        - FRK28
-        - FRL03
       Venezia:
         label: "Lombardo\nVeneto"
         label_options:
