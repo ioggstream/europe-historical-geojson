@@ -59,7 +59,6 @@ links:
 - [Cagliari, Trapani]
 - ["porto torres, Italia", "Le Lavandou, France"]
 - [edinburg, bergen]
-- [smirne, atene]
 - [valona, otranto]
 - [Frederikshavn, Goteborg]
 - [Hirtshals, Kristiansand]
@@ -69,8 +68,11 @@ links:
 - [Belfast, Portpatrick]
 - [Wexford, Fishguard]
 - [Ancona, Zara Vecchia]
-- ["Lowestoft, UK", "kijkduin, The Netherlands" ]
+- ["Lowestoft, UK", "Monster, NL" ]
 - ["Cala Rajada, Baleares, Espana", "Porto Palma, Italia"]
+- ["Smirne, Turchia", "Atene, GR"]
+- ["Orga, CY", "Anamur, Turkye"]
+- ["Pafos, CY", "Kato Zakros, GR"]
 
 maps:
   UK:
@@ -135,7 +137,7 @@ maps:
       facecolor1: darkred
       facecolor2: red
     citta:
-      - address: Mosca, Russia
+      - address: Moskva, RU
       - address: Sankt Petersbourg, Russia
       - address: Varsavia, Poland
       - address: Orel, Russia
@@ -285,6 +287,8 @@ maps:
       - address: Salamanca, Espana
         <<: *small_city
       - address: Pamplona, Espana
+        <<: *small_city
+      - address: Varna, Bulgaria
         <<: *small_city
     regions:
       Svizzera:
@@ -473,6 +477,14 @@ maps:
       - address: Bratislava, SK
         <<: *small_city
       - address: Sarajevo, BH
+        <<: *small_city
+      - address: Zagreb, HR
+        <<: *small_city
+      - address: Zadar, HR
+        <<: *small_city
+      - address: Split, HR
+        <<: *small_city
+      - address: Pula, HR
         <<: *small_city
       - address: Wroclaw, PL
         <<: *small_city
@@ -718,9 +730,9 @@ maps:
         - 'ITC41'
         - ITC48
       Venezia:
-        label: "Lombardo\nVeneto"
+        label: "Veneto"
         label_options:
-          x: -2
+          x: 0
           y: -1
         codes:
         - ITH41

@@ -63,7 +63,7 @@ def plot_net(nbr, ax):
             geoline(x, y).plot(ax=ax, color="red")
 
 
-def _get_europe():
+def _get_europe() -> GeoDataFrame:
     europe = config()["europe_borders"]
     eu_area = gpd.read_file(StringIO(json.dumps(europe)))
     eu_area = eu_area.set_crs(EPSG_4326_WGS84)
@@ -272,7 +272,6 @@ def render(
 
     for region_name in empire.name:
         region = empire[empire.name == region_name]
-        soglia=0.4
         togli_isolette(region, 0.3)
         empire[empire.name == region_name] = region
 
@@ -304,7 +303,14 @@ def render(
     return empire
 
 
-def annotate_region(region, text=None, xytext=None, fontname=FONT_REGION, color=FONT_REGION_COLOR, ax=plt):
+def annotate_region(
+    region,
+    text=None,
+    xytext=None,
+    fontname=FONT_REGION,
+    color=FONT_REGION_COLOR,
+    ax=plt,
+):
     state_label = region.state.values[0]
     region_name = region.name.values[0]
     point = baricenter(region)
@@ -314,25 +320,23 @@ def annotate_region(region, text=None, xytext=None, fontname=FONT_REGION, color=
     rotation = region_label_options.get("rotation", 0)
     horizontalalignment = region_label_options.get("ha", "center")
     fontsize = 20
-    padding = [
-                    region_label_options.get("x", 0),
-                    region_label_options.get("y", 0),
-                ]
-    annotate_coords(ax=ax,
-                    text=text or region_label,
-                    xy=point,
-                    xytext=(i * fontsize for i in padding) if xytext is None else xytext,
-                    horizontalalignment=horizontalalignment,
-                    verticalalignment="center",
-                    fontsize=fontsize,
-                    color=color,
-                    fontname=fontname,
-                    # fontname="URW Bookman", color="black", fontsize=16,
-                    # fontstyle="italic",
-                    state_label=None,
-                    rotation=rotation,
-                    textcoords="offset points",
-                )
+    padding = [region_label_options.get("x", 0), region_label_options.get("y", 0)]
+    annotate_coords(
+        ax=ax,
+        text=text or region_label,
+        xy=point,
+        xytext=(i * fontsize for i in padding) if xytext is None else xytext,
+        horizontalalignment=horizontalalignment,
+        verticalalignment="center",
+        fontsize=fontsize,
+        color=color,
+        fontname=fontname,
+        # fontname="URW Bookman", color="black", fontsize=16,
+        # fontstyle="italic",
+        state_label=None,
+        rotation=rotation,
+        textcoords="offset points",
+    )
 
 
 def render_state(
@@ -377,8 +381,6 @@ def test_render_labels_ok():
         )
     # render_state(state_label="Italia", ax=label_board, plot_geo=False, plot_labels=True)
     fig_label.savefig("label-board.eps", dpi=300, transparent=True, format="eps")
-
-
 
 
 def test_render_background_masked_ok():
@@ -434,7 +436,7 @@ def test_render_state_labels_ok():
 
 def render_seas(ax=None):
     for s in seas():
-        annotate_location(s, text=s)
+        annotate_coords(ax=ax, **s)
 
 
 def test_addmap(ax):
@@ -468,6 +470,7 @@ def render_board(countries=COUNTRIES, background=False):
     fig_links, links_board = get_board()
     if background:
         eu = _get_europe().to_crs(MY_CRS)
+        eu.plot(ax=full_board, facecolor="lightblue")
         eu.plot(ax=risk_board, facecolor="lightblue")
 
     countries = countries or COUNTRIES
@@ -475,12 +478,23 @@ def render_board(countries=COUNTRIES, background=False):
     render_links(ax=links_board)
 
     with Pool(processes=20) as pool:
-        pool.map(partial(render_state, ax=risk_board, plot_geo=True, plot_labels=False, plot_cities=False, plot_state_labels=False), countries)
-        pool.map(partial(render_state, ax=full_board, plot_geo=True, plot_labels=True, plot_cities=True, plot_state_labels=False), countries)
-        pool.map(partial(render_state, ax=label_board, plot_geo=False, plot_labels=True, plot_cities=True,  plot_state_labels=False), countries)
-        pool.map(partial(render_state, ax=links_board, plot_geo=False, plot_labels=False, plot_cities=False, plot_state_labels=False), countries)
+        #    pool.map(partial(render_state, ax=risk_board, plot_geo=True, plot_labels=False, plot_cities=False, plot_state_labels=False), countries)
+        pool.map(
+            partial(
+                render_state,
+                ax=full_board,
+                plot_geo=True,
+                plot_labels=True,
+                plot_cities=True,
+                plot_state_labels=False,
+            ),
+            countries,
+        )
+    #    pool.map(partial(render_state, ax=label_board, plot_geo=False, plot_labels=True, plot_cities=True,  plot_state_labels=False), countries)
+    #    pool.map(partial(render_state, ax=links_board, plot_geo=False, plot_labels=False, plot_cities=False, plot_state_labels=False), countries)
 
-    # render_seas(ax=full_board)
+    render_seas(ax=full_board)
+
     render_net = False
     if render_net:
         nbr = {}
@@ -492,21 +506,25 @@ def render_board(countries=COUNTRIES, background=False):
         df.plot(ax=risk_board)
 
         for region_id, values in nbr.items():
-            annotate_coords(values['coords'], f"w: {values['count']}",
-                                 textcoords="offset points", xytext=(-20,-20))
+            annotate_coords(
+                values["coords"],
+                f"w: {values['count']}",
+                textcoords="offset points",
+                xytext=(-20, -20),
+            )
 
     # add_basemap(full_board, crs=str(MY_CRS), )
+    suffix = get_suffix()
     cfg = dict(dpi=300, bbox_inches="tight", transparent=True)
-    fig_risk.savefig("/tmp/risk-board.png", **cfg)
-    fig_label.savefig("/tmp/label-board.png", **cfg)
-    fig_full.savefig("/tmp/full-board.png", **cfg)
-    fig_links.savefig("/tmp/links-board.png", **cfg)
+    fig_risk.savefig(f"/tmp/risk-board-{suffix}.png", **cfg)
+    fig_label.savefig(f"/tmp/label-board-{suffix}.png", **cfg)
+    fig_full.savefig(f"/tmp/full-board-{suffix}.png", **cfg)
+    fig_links.savefig(f"/tmp/links-board-{suffix}.png", **cfg)
 
 
 def get_board():
     fig, board = plt.subplots(1, 1)
     plt.tight_layout(pad=0.05)
-    scale = 2.6
     fig.set_size_inches(cm2inch(90, 60), forward=True)
     fig.set_dpi(300)
     board.set_axis_off()

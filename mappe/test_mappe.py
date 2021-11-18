@@ -1,19 +1,20 @@
-from geopandas.geodataframe import GeoDataFrame
-import yaml
 from pathlib import Path
+
+import yaml
+
 from . import (
     COUNTRIES,
+    MY_CRS,
+    _get_europe,
+    add_basemap,
     annotate_region,
+    ctx,
     get_board,
     get_state,
     maps,
     plot_net,
     prepare_neighbor_net,
     togli_isolette,
-    _get_europe,
-    add_basemap,
-    MY_CRS,
-    ctx
 )
 from .utils import get_cache_filename
 

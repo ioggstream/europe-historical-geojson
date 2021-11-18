@@ -1,7 +1,6 @@
 import logging
 import os
 from functools import lru_cache
-from operator import add
 from pathlib import Path
 from typing import List
 
@@ -18,26 +17,33 @@ log = logging.getLogger(__name__)
 
 LARGE_CITY = "\u2299"  # "◉"
 
-config = lambda: yaml.safe_load(Path(os.environ.get("MAPPE_YAML", "mappe.yaml")).read_text())
+config = lambda: yaml.safe_load(
+    Path(os.environ.get("MAPPE_YAML", "mappe.yaml")).read_text()
+)
 maps = lambda: config()["maps"]
 seas = lambda: config()["seas"]
 links = lambda: config()["links"]
 
 
-
 import os
 
+
 def get_cache_filename(state):
-    suffix = os.path.basename(os.environ.get("MAPPE_YAML", "mappe.yaml"))
+    suffix = get_suffix()
     return f"tmp-{suffix}-{state}.geojson"
-    
+
+
+def get_suffix():
+    return os.path.basename(os.environ.get("MAPPE_YAML", "mappe.yaml"))
+
 
 def get_config(fpath="mappe.yaml"):
-    config =  yaml.safe_load(Path(fpath).read_text())
+    config = yaml.safe_load(Path(fpath).read_text())
     config.maps = config["maps"]
     config.maps = config["seas"]
     config.maps = config["links"]
     return config
+
 
 def annotate_location(
     address,
@@ -65,24 +71,31 @@ def annotate_location(
     )
 
 
-def annotate_coords(xy, text, state_label=None, ax=plt, **kwargs):
+def annotate_coords(xy, text, state_label=None, ax=plt, padding=(0, 0), **kwargs):
+    log.warning(f"annotate {text} @{xy}")
     translate = (0, 0)
-    # adjust = [-1863.686871749116, -252.13592858798802]
-    adjust = [0, 0]
     if state_label:
         state_config = maps()[state_label]
         translate = state_config.get("translate", [0, 0])
+
+    xytext = kwargs.get("xytext", None)
+    fontsize = kwargs.get("fontsize", 24)
+    if not xytext:
+        kwargs["xytext"] = (i * fontsize for i in padding)
+        kwargs["textcoords"] = "offset points"
+
     coords = np.array(xy)
     coords += np.array(translate)
     map_coords = point_coords(*coords)
-    map_coords = tuple(map(add, map_coords, adjust))
     # Annotate the given point with centered alignment.
+    log.warning(f"annotate {text} @{map_coords}, {kwargs}")
     ax.annotate(text=text, xy=map_coords, ha="center", va="center", **kwargs)
 
 
 def geolocate(address):
     from geopy.geocoders import MapQuest
 
+    log.warning(f"geolocate {address}")
     try:
         geolocator = MapQuest(
             user_agent="europe-geojson", api_key=os.environ.get("MAPQUEST_API_KEY")
