@@ -43,22 +43,47 @@ constants:
     text: "●"
 
 seas:
-  - Mare Adriatico
-  - Mar Mediterraneo
-  - Mar Tirreno
-  - Mar Baltico
-  - Oceano Atlantico
-  - Mar Egeo
-  - Mar Ligure
-  - Mare del Nord
-  - Mar Nero
-  - Mar Ionio
-  - Golfo di Biscaglia
-  - Stretto di Gibilterra
+  - text: "Mare Adriatico"
+    xy: [16.104211, 42.684288]
+    rotation: -45
+    padding: [0,0]
+    fontsize: 24
+  - text: "Mar Mediterraneo" # Ionio
+    xy: [18.188472, 37.762008]
+    fontsize: 24
+    padding: [1, -2]
+  - text: Mar Mediterraneo
+    xy: [11.4822, 39.1299]
+    fontsize: 24
+    rotation: -45
+    padding: [1, 1]
+  - text: Mar Mediterraneo
+    fontsize: 24
+    xy: [4.3976, 41.2041]
+    padding: [0, -1]
+  - text: "Oceano Atlantico"
+    fontsize: 24
+    xy: [-4.4793, 45.2368]
+  - text: "Oceano Atlantico"
+    fontsize: 24
+    xy: [-10.4998, 40.4393]
+    rotation: 90
+  - text: "Mare del Nord"
+    fontsize: 24
+    xy: [2.94, 56.38]
+  - text: Mar Baltico
+    fontsize: 24
+    xy: [19.82, 58.58]
+  - text: Mare Nero
+    fontsize: 24
+    rotation: 0
+    xy: [29.964787, 42.431873]
+
 links:
 - [Cagliari, Trapani]
 - ["porto torres, Italia", "Le Lavandou, France"]
 - [edinburg, bergen]
+- [smirne, atene]
 - [valona, otranto]
 - [Frederikshavn, Goteborg]
 - [Hirtshals, Kristiansand]
@@ -68,9 +93,8 @@ links:
 - [Belfast, Portpatrick]
 - [Wexford, Fishguard]
 - [Ancona, Zara Vecchia]
-- ["Lowestoft, UK", "Monster, NL" ]
+- ["Lowestoft", "L'Aia, NL"]
 - ["Cala Rajada, Baleares, Espana", "Porto Palma, Italia"]
-- ["Smirne, Turchia", "Atene, GR"]
 - ["Orga, CY", "Anamur, Turkye"]
 - ["Pafos, CY", "Kato Zakros, GR"]
 
