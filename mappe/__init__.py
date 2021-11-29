@@ -36,6 +36,21 @@ requests_cache.install_cache("demo_cache")
 
 COUNTRIES = tuple(maps().keys())
 
+def test_render_background_masked_ok():
+    diff = _get_europe().to_crs(MY_CRS)
+    for c in COUNTRIES:
+        diff = diff - get_state(c).to_crs(MY_CRS).unary_union
+
+    fig, ax = get_board()
+    diff.plot(ax=ax, color="lightblue")
+    add_basemap(
+        ax,
+        crs=str(MY_CRS),
+        # source=ctx.providers.Esri.WorldPhysical,
+        source=ctx.providers.Esri.WorldShadedRelief,
+    )
+    fig.savefig("masked-terrain-board.png", dpi=300, transparent=True)
+
 
 def prepare_neighbor_net(gdf: GeoDataFrame, nbr: dict):
     for index, row in gdf.iterrows():
@@ -174,14 +189,21 @@ def get_regions(state_label) -> dict:
     return {k: join_areas(v["codes"]) for k, v in regions.items()}
 
 
-def get_state(state_name, cache=True) -> GeoDataFrame:
+def get_state(state_name, cache=True, save=False) -> GeoDataFrame:
     """:return a WGS84 geodataframe eventually intersected with the rest"""
+    state_config = maps()[state_name]
+    translate = state_config.get("translate", [0, 0])
+    scale = state_config.get("scale", [1.0, 1.0])
+
     f = state_name.replace("\n", " ")
     cache_file = Path(get_cache_filename(f))
     if cache and cache_file.exists():
         log.warning(f"Reading from {cache_file}")
         ret = gpd.read_file(cache_file.open())
         assert ret.crs == EPSG_4326_WGS84
+        if not save:
+            ret.geometry = ret.geometry.affine_transform([scale[0], 0, 0, scale[1], translate[0], translate[1]])
+
         return ret
     regions = list(get_regions(state_name).items())
     n, t = regions[0]
@@ -197,9 +219,6 @@ def get_state(state_name, cache=True) -> GeoDataFrame:
             )
         )
     ret = ret.reset_index()
-    state_config = maps()[state_name]
-    translate = state_config.get("translate", [0, 0])
-    scale = state_config.get("scale", [1.0, 1.0])
 
     #
     # Restrict state borders using a specific geojson.
@@ -211,7 +230,8 @@ def get_state(state_name, cache=True) -> GeoDataFrame:
         ret.geometry = ret.geometry.intersection(borders)
 
     ret = ret.set_crs(EPSG_4326_WGS84)
-    ret.geometry = ret.geometry.translate(*translate).scale(*scale)
+    if not save:
+        ret.geometry = ret.geometry.affine_transform([scale[0], 0, 0, scale[1], translate[0], translate[1]])
     assert ret.crs == EPSG_4326_WGS84
     return ret
 
@@ -359,80 +379,6 @@ def render_state(
     return state_area
 
 
-def test_render_state():
-    fig, ax = get_board()
-    render_state("Italia", ax=ax)
-    fig.savefig("/tmp/test-render-state.png", dpi=300)
-
-
-def test_render_labels_ok():
-    fig_label, label_board = get_board()
-    with Pool(processes=20) as pool:
-        pool.map(
-            partial(
-                render_state,
-                ax=label_board,
-                plot_geo=False,
-                plot_labels=True,
-                plot_cities=False,
-                plot_state_labels=False,
-            ),
-            COUNTRIES,
-        )
-    # render_state(state_label="Italia", ax=label_board, plot_geo=False, plot_labels=True)
-    fig_label.savefig("label-board.eps", dpi=300, transparent=True, format="eps")
-
-
-def test_render_background_masked_ok():
-    diff = _get_europe().to_crs(MY_CRS)
-    for c in COUNTRIES:
-        diff = diff - get_state(c).to_crs(MY_CRS).unary_union
-
-    fig, ax = get_board()
-    diff.plot(ax=ax, color="lightblue")
-    add_basemap(
-        ax,
-        crs=str(MY_CRS),
-        # source=ctx.providers.Esri.WorldPhysical,
-        source=ctx.providers.Esri.WorldShadedRelief,
-    )
-    fig.savefig("masked-terrain-board.png", dpi=300, transparent=True)
-
-
-def test_render_cities_ok():
-    fig_label, label_board = get_board()
-    with Pool(processes=20) as pool:
-        pool.map(
-            partial(
-                render_state,
-                ax=label_board,
-                plot_geo=False,
-                plot_labels=False,
-                plot_cities=True,
-                plot_state_labels=False,
-            ),
-            COUNTRIES,
-        )
-    fig_label.savefig("cities-board.eps", dpi=300, transparent=True, format="eps")
-
-
-def test_render_state_labels_ok():
-    fig_label, label_board = get_board()
-    with Pool(processes=20) as pool:
-        pool.map(
-            partial(
-                render_state,
-                ax=label_board,
-                plot_geo=False,
-                plot_labels=False,
-                plot_cities=False,
-                plot_state_labels=True,
-                plot_state_labels_only=True,
-            ),
-            COUNTRIES,
-        )
-    fig_label.savefig("state_labels-board.eps", dpi=300, transparent=True, format="eps")
-
 
 def render_seas(ax=None):
     for s in seas():
@@ -453,17 +399,38 @@ def render_links(ax):
         src, dst = link
         # src = find_region(src)
         # dst = find_region(dst)
-        src = tuple(geolocate(src))
-        dst = tuple(geolocate(dst))
+        found_region = find_region(src)
+        if found_region is not None:
+            src = baricenter(found_region)
+        else:
+            src = tuple(geolocate(src))
+        
+        found_region = find_region(dst)
+        if found_region is not None:
+            dst = baricenter(found_region)        
+        else:
+            dst = tuple(geolocate(dst))
 
         print("linea", src, dst)
         if all(x is not None for x in (src, dst)):
             line = geoline(src, dst)
             line = line.set_crs(EPSG_4326_WGS84).to_crs(MY_CRS)
-            line.plot(ax=ax, color="black", linewidth=2, linestyle="dashed")
+            line.plot(ax=ax, color="black", linewidth=2, linestyle="dashed", zorder=1)
+
+def get_state_archive():
+    global state_archive
+    if len(state_archive):
+        return state_archive
+    
+    for c in COUNTRIES:
+        state_ = get_state(c)
+        state_archive.update({
+            k: state_[state_.name==k] for k in state_.name.values
+        })
+    return state_archive
 
 
-def render_board(countries=COUNTRIES, background=False):
+def render_board(countries=COUNTRIES, background=False, plot_cities=True, **kwargs):
     fig_risk, risk_board = get_board()
     fig_label, label_board = get_board()
     fig_full, full_board = get_board()
@@ -474,6 +441,7 @@ def render_board(countries=COUNTRIES, background=False):
         eu.plot(ax=risk_board, facecolor="lightblue")
 
     countries = countries or COUNTRIES
+    get_state_archive()
     render_links(ax=full_board)
     render_links(ax=links_board)
 
@@ -485,7 +453,7 @@ def render_board(countries=COUNTRIES, background=False):
                 ax=full_board,
                 plot_geo=True,
                 plot_labels=True,
-                plot_cities=True,
+                plot_cities=plot_cities,
                 plot_state_labels=False,
             ),
             countries,
@@ -493,7 +461,7 @@ def render_board(countries=COUNTRIES, background=False):
     #    pool.map(partial(render_state, ax=label_board, plot_geo=False, plot_labels=True, plot_cities=True,  plot_state_labels=False), countries)
     #    pool.map(partial(render_state, ax=links_board, plot_geo=False, plot_labels=False, plot_cities=False, plot_state_labels=False), countries)
 
-    render_seas(ax=full_board)
+#    render_seas(ax=full_board)
 
     render_net = False
     if render_net:
@@ -515,11 +483,11 @@ def render_board(countries=COUNTRIES, background=False):
 
     # add_basemap(full_board, crs=str(MY_CRS), )
     suffix = get_suffix()
-    cfg = dict(dpi=300, bbox_inches="tight", transparent=True)
-    fig_risk.savefig(f"/tmp/risk-board-{suffix}.png", **cfg)
-    fig_label.savefig(f"/tmp/label-board-{suffix}.png", **cfg)
+    cfg = dict(dpi=92, bbox_inches="tight", transparent=True)
+#    fig_risk.savefig(f"/tmp/risk-board-{suffix}.png", **cfg)
+#    fig_label.savefig(f"/tmp/label-board-{suffix}.png", **cfg)
     fig_full.savefig(f"/tmp/full-board-{suffix}.png", **cfg)
-    fig_links.savefig(f"/tmp/links-board-{suffix}.png", **cfg)
+#    fig_links.savefig(f"/tmp/links-board-{suffix}.png", **cfg)
 
 
 def get_board():

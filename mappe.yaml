@@ -81,18 +81,24 @@ seas:
 links:
 - [Cagliari, Trapani]
 - ["porto torres, Italia", "Le Lavandou, France"]
-- [edinburg, bergen]
 - [smirne, atene]
 - [valona, otranto]
+- [Ancona, Zara Vecchia]
 - [Frederikshavn, Goteborg]
 - [Hirtshals, Kristiansand]
 - [graddo, turku]
-- ["Sangatte, France", "Dover, United kingdom"]
-- [Cherbourg, Bornemouth]
-- [Belfast, Portpatrick]
-- [Wexford, Fishguard]
-- [Ancona, Zara Vecchia]
-- ["Lowestoft", "L'Aia, NL"]
+# - ["Sangatte, France", "Dover, United kingdom"]
+- ["Scotland", "Bergen"]
+# - [Cherbourg, Bornemouth]
+# - [Belfast, Portpatrick]
+#- [Wexford, Fishguard]
+# - ["Lowestoft", "L'Aia, NL"]
+- ["Ireland", "Wales"]
+- ["Ireland", "Scotland"]
+- ["Bretagne", "London"]
+- ["Benelux", "London"]
+- ["Sangatte, France", "London"]
+- ["Portugal", "Ireland"]
 - ["Cala Rajada, Baleares, Espana", "Porto Palma, Italia"]
 
 maps:
@@ -101,8 +107,8 @@ maps:
     config:
       facecolor1: '#4735bc'
       facecolor2: '#4735bc'
-    # translate: [-1.0, -2.0]
-    scale: [1.2, 1.2]
+    translate: [1, -9.5]
+    scale: [1.3, 1.2]
     citta:
       - address: London, UK
       - address: Liverpool, UK
@@ -119,9 +125,6 @@ maps:
         <<: *small_city
       - address: Leeds, UK
         <<: *small_city
-
-
-
     regions:
       Scotland:
         label: Scotland
@@ -146,10 +149,18 @@ maps:
         - UKF
         - UKJ
         - UKK
+  UK2:
+    config:
+      facecolor1: '#4735bc'
+      facecolor2: '#4735bc'
+    translate: [0, 1.2]
+    scale: [1.0, 1.0]
+    regions:
       Ireland:
         codes:
         - IE
         - UKN
+
   Russia:
     config:
       facecolor1: darkred
@@ -511,6 +522,7 @@ maps:
         label_options:
           y: 2
           x: 1
+          rotation: 20
         codes:
         # - HR # istria
         - SI03
@@ -597,6 +609,10 @@ maps:
         codes:
         - AL
       Grecia:
+        label_options:
+          x: -2
+          y: 10
+          rotation: 0
         codes:
         - EL3
         - EL4  # In 1880 Creta was under the Ottoman empire
@@ -717,9 +733,6 @@ maps:
     config:
       facecolor1: darkgreen
       facecolor2: '#447447'
-    translate:
-      - 0.0
-      - 0.0
     citta:
       - address: Roma, Italy
       - address: Milano, Italy
@@ -761,8 +774,8 @@ maps:
         - FRL03
       Toscana:
         label_options:
-          rotation: -50
-          y: 2
+          rotation: -55
+          y: 1
           x: -2
         codes:
         - ITH51
@@ -781,8 +794,8 @@ maps:
         - ITG1 # sicilia
       Roma:
         label_options:
-          rotation: 45
-          y: -2
+          rotation: 55
+          y: -1
         codes:
         - ITI2
         - ITI3
@@ -792,6 +805,8 @@ maps:
         - ITH57
         - ITH58
         - ITH59
+        - 54624 # RSM
+        - 36989  # VA
       "Sardegna":
         label_options:
           rotation: 90

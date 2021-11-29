@@ -31,7 +31,7 @@ def test_render_background_ok():
 def test_save_states():
     for c in COUNTRIES:
         f = c.replace("\n", " ")
-        df = get_state(c, cache=False)
+        df = get_state(c, cache=False, save=True)
         soglia_isolette = 0.2
         try:
             togli_isolette(df, soglia_isolette)
@@ -78,3 +78,68 @@ def test_annotate_region():
     region = gdf[gdf.name == region_id]
     annotate_region("France", region)
     raise NotImplementedError
+
+
+def test_render_state():
+    fig, ax = get_board()
+    render_state("Italia", ax=ax)
+    fig.savefig("/tmp/test-render-state.png", dpi=300)
+
+
+def test_render_labels_ok():
+    fig_label, label_board = get_board()
+    with Pool(processes=20) as pool:
+        pool.map(
+            partial(
+                render_state,
+                ax=label_board,
+                plot_geo=False,
+                plot_labels=True,
+                plot_cities=False,
+                plot_state_labels=False,
+            ),
+            COUNTRIES,
+        )
+    # render_state(state_label="Italia", ax=label_board, plot_geo=False, plot_labels=True)
+    fig_label.savefig("label-board.eps", dpi=300, transparent=True, format="eps")
+
+
+
+from multiprocessing import Pool
+
+from . import render_state
+from functools import partial
+def test_render_cities_ok():
+    fig_label, label_board = get_board()
+    with Pool(processes=20) as pool:
+        pool.map(
+            partial(
+                render_state,
+                ax=label_board,
+                plot_geo=False,
+                plot_labels=False,
+                plot_cities=True,
+                plot_state_labels=False,
+            ),
+            COUNTRIES,
+        )
+    fig_label.savefig("cities-board.eps", dpi=300, transparent=True, format="eps")
+
+
+def test_render_state_labels_ok():
+    fig_label, label_board = get_board()
+    with Pool(processes=20) as pool:
+        pool.map(
+            partial(
+                render_state,
+                ax=label_board,
+                plot_geo=False,
+                plot_labels=False,
+                plot_cities=False,
+                plot_state_labels=True,
+                plot_state_labels_only=True,
+            ),
+            COUNTRIES,
+        )
+    fig_label.savefig("state_labels-board.eps", dpi=300, transparent=True, format="eps")
+

@@ -29,7 +29,7 @@ import os
 
 
 def get_cache_filename(state):
-    suffix = get_suffix()
+    suffix = get_suffix().split(".")[0]
     return f"tmp-{suffix}-{state}.geojson"
 
 
