@@ -76,7 +76,10 @@ def annotate_coords(xy, text, state_label=None, ax=plt, padding=(0, 0), **kwargs
     translate = (0, 0)
     if state_label:
         state_config = maps()[state_label]
-        translate = state_config.get("translate", [0, 0])
+        tx, ty = state_config.get("translate", [0, 0])
+        a11, a22 = state_config.get("scale", [1, 1])
+        from shapely.geometry import Point
+        xy = GeoSeries(Point(xy[0], xy[1])).affine_transform([a11, 0, 0, a22, tx, ty]).geometry[0].coords[:][0]
 
     xytext = kwargs.get("xytext", None)
     fontsize = kwargs.get("fontsize", 24)

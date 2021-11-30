@@ -430,7 +430,7 @@ def get_state_archive():
     return state_archive
 
 
-def render_board(countries=COUNTRIES, background=False, plot_cities=True, **kwargs):
+def render_board(countries=COUNTRIES, background=False, plot_cities=True, render_net=False, **kwargs):
     fig_risk, risk_board = get_board()
     fig_label, label_board = get_board()
     fig_full, full_board = get_board()
@@ -463,7 +463,6 @@ def render_board(countries=COUNTRIES, background=False, plot_cities=True, **kwar
 
 #    render_seas(ax=full_board)
 
-    render_net = False
     if render_net:
         nbr = {}
         df = get_state(COUNTRIES[0])
@@ -484,9 +483,9 @@ def render_board(countries=COUNTRIES, background=False, plot_cities=True, **kwar
     # add_basemap(full_board, crs=str(MY_CRS), )
     suffix = get_suffix()
     cfg = dict(dpi=92, bbox_inches="tight", transparent=True)
+    fig_full.savefig(f"/tmp/full-board-{suffix}.png", **cfg)
 #    fig_risk.savefig(f"/tmp/risk-board-{suffix}.png", **cfg)
 #    fig_label.savefig(f"/tmp/label-board-{suffix}.png", **cfg)
-    fig_full.savefig(f"/tmp/full-board-{suffix}.png", **cfg)
 #    fig_links.savefig(f"/tmp/links-board-{suffix}.png", **cfg)
 
 

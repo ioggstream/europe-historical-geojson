@@ -5,3 +5,6 @@ clean:
 
 save: clean
 	poetry run pytest -k save
+
+mappe:
+	poetry run python -mmappe
