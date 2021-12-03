@@ -36,71 +36,151 @@ europe_borders: {
 
 constants:
   large_city: &large_city
-    size: 24
+    fontsize: 24
     text: "\u2299"
   small_city: &small_city
-    size: 12
+    fontsize: 10
     text: "●"
 
 seas:
-  - Mare Adriatico
-  - Mar Mediterraneo
-  - Mar Tirreno
-  - Mar Baltico
-  - Oceano Atlantico
-  - Mar Egeo
-  - Mar Ligure
-  - Mare del Nord
-  - Mar Nero
-  - Mar Ionio
-  - Golfo di Biscaglia
-  - Stretto di Gibilterra
+  - text: "Mare Adriatico"
+    xy: [16.104211, 42.684288]
+    rotation: -45
+    padding: [0,0]
+    fontsize: 24
+  - text: "Mar Mediterraneo" # Ionio
+    xy: [18.188472, 37.762008]
+    fontsize: 24
+    padding: [1, -2]
+  - text: Mar Mediterraneo
+    xy: [11.4822, 39.1299]
+    fontsize: 24
+    rotation: -45
+    padding: [1, 1]
+  - text: Mar Mediterraneo
+    fontsize: 24
+    xy: [4.3976, 41.2041]
+    padding: [0, -1]
+  - text: "Oceano Atlantico"
+    fontsize: 24
+    xy: [-4.4793, 45.2368]
+  - text: "Oceano Atlantico"
+    fontsize: 24
+    xy: [-10.4998, 40.4393]
+    rotation: 90
+  - text: "Mare del Nord"
+    fontsize: 24
+    xy: [2.94, 56.38]
+  - text: Mar Baltico
+    fontsize: 24
+    xy: [19.82, 58.58]
+  - text: Mare Nero
+    fontsize: 24
+    rotation: 0
+    xy: [29.964787, 42.431873]
+links:
+- [Cagliari, Trapani]
+- ["porto torres, Italia", "Le Lavandou, France"]
+- [smirne, atene]
+- [valona, otranto]
+- [Ancona, Zara Vecchia]
+- [Frederikshavn, Goteborg]
+- [Hirtshals, Kristiansand]
+- [graddo, turku]
+# - ["Sangatte, France", "Dover, United kingdom"]
+- ["Scotland", "Bergen"]
+# - [Cherbourg, Bornemouth]
+# - [Belfast, Portpatrick]
+#- [Wexford, Fishguard]
+# - ["Lowestoft", "L'Aia, NL"]
+- ["Ireland", "Wales"]
+- ["Ireland", "Scotland"]
+- ["Bretagne", "London"]
+- ["Benelux", "London"]
+- ["Sangatte, France", "London"]
+- ["Portugal", "Ireland"]
+- ["Cala Rajada, Baleares, Espana", "Porto Palma, Italia"]
+
 maps:
-  "United Kingdom":
+  UK:
+    label: "United Kingdom"
     config:
-      facecolor1: blue
-      facecolor2: blue
-    translate:
-      - -1.0
-      - 2.0
+      facecolor1: '#4735bc'
+      facecolor2: '#4735bc'
+    # Make the UK a bit bigger
+    #  to make some more space for tanks.
+    translate: [1, -9.5]
+    scale: [1.3, 1.2]
     citta:
       - address: London, UK
+      - address: Liverpool, UK
+      - address: Edinburg, UK
+        <<: *small_city
+      - address: Cardiff, UK
+        <<: *small_city
+      - address: Belfast, UK
+        <<: *small_city
+      - address: Glasgow, UK
+        <<: *small_city
       - address: Manchester, UK
-      - address: Dublin, Ireland
-    territori:
+        <<: *small_city
+      - address: Leeds, UK
+        <<: *small_city
+    regions:
       Scotland:
+        label: Scotland
+        codes:
         - UKM
       Wales:
+        codes:
         - UKL
         - UKG
       Yorkshire:
+        codes:
         - UKC
         - UKD
         - UKE
       London:
+        label_options:
+          y: 1
+          x: 1
+        codes:
         - UKH
         - UKI
         - UKF
         - UKJ
         - UKK
+  UK2:
+    config:
+      facecolor1: '#4735bc'
+      facecolor2: '#4735bc'
+    translate: [0, 1.2]
+    scale: [1.0, 1.0]
+    citta:
+    - address: Dublin, Ireland
+    regions:
       Ireland:
+        codes:
         - IE
         - UKN
+
   Russia:
     config:
       facecolor1: darkred
       facecolor2: red
     citta:
-      - address: Mosca, Russia
+      - address: Moscow, Russia
       - address: Sankt Petersbourg, Russia
       - address: Varsavia, Poland
-      - address: Lipeck, Russia
-        <<: *small_city
       - address: Orel, Russia
         <<: *small_city
       - address: Brjansk, Russia
         <<: *small_city
-      - address: Vladimir, Russia
+      - address: Tver, Russia
+        <<: *small_city
+      - address: Penza, Russia
+        <<: *small_city
+      - address: Minsk, Belarus
         <<: *small_city
       - address: Mahilev, Belarus
         <<: *small_city
@@ -110,73 +190,79 @@ maps:
         <<: *small_city
       - address: Riga, Latvia
         <<: *small_city
-      - address: Tver, Russia
-        <<: *small_city
-      - address: Kaluga, Russia
-        <<: *small_city
-      - address: Penza, Russia
-        <<: *small_city
-      - address: Jaroslavl, Russia
-        <<: *small_city
       - address: Helsinki, Finland
         <<: *small_city
       - address: Poltava, Ukraina
         <<: *small_city
       - address: Cerkasy, Ukraina
-      <<: *small_city
+        <<: *small_city
 
     country-borders: urss.geojson
     regioni:
         Ucraina:
-        - 72634 # Odessa
-        - 71022 # Cherson
-        - 71236
-        - 71248 # Kiev
-        - 58974 # MD
-        #      - 42866 # Kiev
-        - 71236 # Rivne
-        - 71245 # Zitomir
-        - 72639 # Crimea
-        - 71064 # Volinia
-        - 71249 # Chernihiv ? HU
-        - 72635
-        - 71971
-        - 90726
-        - 91294
-        - 71250 # Sumy
-        - 71254
-        - 71980 # Zaporizhia
-        - 91278 # Cherkasy
-        - 90742 # Chmelnyckyk
-        - 101746 # Dnipr
-        - 101859 # Kirowhrad
-        - 393980  # Karelia
+          - 72634 # Odessa
+          - 71022 # Cherson
+          - 71236
+          - 71248 # Kiev
+          - 58974 # MD
+          #      - 42866 # Kiev
+          - 71236 # Rivne
+          - 71245 # Zitomir
+          - 72639 # Crimea
+          - 71064 # Volinia
+          - 71249 # Chernihiv ? HU
+          - 72635
+          - 71971
+          - 90726
+          - 91294
+          - 71250 # Sumy
+          - 71254
+          - 71980 # Zaporizhia
+          - 91278 # Cherkasy
+          - 90742 # Chmelnyckyk
+          - 101746 # Dnipr
+          - 101859 # Kirowhrad
+          - 393980  # Karelia
         Pietroburgo:
-        # - 54224  # Finland
-        - FI
-        - 393980
-        - 176095
-        - 155262  # Pskov
-        - 337422  # Pietroburgo
-        - 89331 # Novograd Grande
-    territori:
+          # - 54224  # Finland
+          - FI
+          - 393980
+          - 176095
+          - 155262  # Pskov
+          - 337422  # Pietroburgo
+          - 89331 # Novograd Grande
+    regions:
       Moskva:
-        - 1029256
-      "Finland\n&\nSankt Peterburg":
-      #  - file://tmp-Pietroburgo.geojson
-        - FI
-        - 393980  # Carelia
-        - 176095
-        - 155262  # Pskov
-        - 337422  # Pietroburgo
-        - 89331 # Novograd Grande
-      "Paesi\nBaltici": ["EE", "LT", "LV"]
+        codes:
+          - 1029256
+      Pietroburgo:
+        label: "Finland\n&\nSankt Peterburg"
+        codes:
+        #  - file://data/geojson/map-Pietroburgo.geojson
+          - FI
+          - 393980  # Carelia
+          - 176095
+          - 155262  # Pskov
+          - 337422  # Pietroburgo
+          - 89331 # Novograd Grande
+      Baltics:
+        label: "Paesi\nBaltici"
+        label_options:
+          y: -2
+        codes: ["EE", "LT", "LV"]
       Ukraina:
-        - file://tmp-Ucraina.geojson
+        codes:
+        - file://data/geojson/map-Ucraina.geojson
       Bielarus:
+        label_options:
+          y: -2
+        codes:
         - BY  # 59065
       Polska:
-        - file://poland-1914.geojson
+        label_options:
+          y: -2
+        codes:
+        - file://data/geojson/poland-1914.geojson
   Indipendenti:
     config:
       facecolor1: orange
@@ -226,39 +312,56 @@ maps:
         <<: *small_city
       - address: Pamplona, Espana
         <<: *small_city
-
-
-
-  
-
-
-
-    territori:
-      # Svizzera:
-       #- "CH"
+    regions:
+      Svizzera:
+        codes:
+        - CH
+        - LI
       Portugal:
-      - "PT"
+        label_options:
+          rotation: 90
+          y: -1
+        codes:
+        - "PT"
       Catalunya:
+        label: "Catalunya\ny Baleares"
+        label_options:
+          rotation: 50
+          x: 1
+          y: 2
+        codes:
         - ES1
         - ES2
         - ES5
       Castilla:
+        codes:
         - ES3
         - ES4
         - ES6
-        - MA
+#        - MA
       Denmark:
+        codes:
         - "DK"
       Sverige:
+        label: "Sverige\n(Svezia)"
+        codes:
         - "SE"
       Norway:
+        label: "Norge\n(Norvegia)"
+        label_options:
+          x: -2
+        codes:
         - "NO"
       Benelux:
+        label: "Be.Ne.Lux"
+        label_options:
+          rotation: 80
+        codes:
         - BE
         - NL
         - LU
 
-  "Deutschland":
+  "Prussia":
     citta:
     - address: Berlino, Germania
     - address: Amburgo, Germania
@@ -285,25 +388,48 @@ maps:
       facecolor1: "#c37437"
       facecolor2: "#c54e25"
     country-borders: germany-1914-boundaries.geojson #"data/geojson/germany-1914.geojson"
-    territori:
-      "Bayern - Baviera":
-        - FRF33
-        - FRF1
+    regions:
+      Bayern:
+        label: "Bayern \n (Baviera)"
+        label_options:
+          rotation: 0
+          x: -2
+          y: -2
+        codes:
         - DE1
         - DE2
         - DE7 # Hesse
-      "Preußen - Prussia":
+      Prussia:
+        label: "Preussen - Prussia"
+        label_options:
+          rotation: 20
+          x: 5
+          y: 1.5
+        codes:
         - 103906 # Konigsberg
         - PL6 # Pomerania
         - PL41 # Pomerania
         - PL42
         #- PL415 # Posen #- PL417 #- PL411 #- PL418
-      "Sachsen - Sassonia":
+      Sachsen:
+        label: "Sachsen (Sassonia)"
+        label_options:
+          y: -1
+          x: 2
+          rotation: -30
+
+        codes:
         - PL22 # Slesia
         - PL5 # Slesia
         - PL43
         - DED # Sachsen
-      "Rhine - Renania":
+      Rhineland:
+        label: "Rhine (Renania)"
+        label_options:
+          rotation: 80
+          y: -3
+          x: -3
+        codes:
         - DE5
         - DE6
         - DK032
@@ -313,6 +439,11 @@ maps:
         - DEB
         - DEC # Saarland
       Berlin:
+        label_options:
+          rotation: 0
+          x: 0
+          y: 1.5
+        codes:
         - DE3
         - DE4
         - DEG
@@ -354,42 +485,91 @@ maps:
 
     regioni:
       Ungheria:
-      - HU
-      - RO1
-      - RO42
-      - SK
-      - 72489 # Trans-carpazia UA
-      - RS12
+        codes:
+        - HU
+        - RO1
+        - RO42
+        - SK
+        - 72489 # Trans-carpazia UA
+        - RS12
       Galizia:
-      - PL21
-      - PL225
-      - 130957 # Pre-carpazia PL
-      - 72380 # Leopoli
-      - 72488 # Ivano-Frankivsk
-      - 72525 # Ternopil
-      - 72526 # Chernivitsi UA
+        codes:
+        - PL21
+        - PL225
+        - 130957 # Pre-carpazia PL
+        - 72380 # Leopoli
+        - 72488 # Ivano-Frankivsk
+        - 72525 # Ternopil
+        - 72526 # Chernivitsi UA
 
-    territori:
-      Wien:
-      - AT
-      - ITH1
-      - ITH2 # trentino alto adige
-      "Trieste &\nDalmacija":
-      - ITH43  # GO
-      - ITH44  # TS
-      - SI
-      - HR # istria
-      - BA
+    regions:
+      Austria:
+        label_options:
+          x: 2
+          y: 1
+        codes:
+        - AT
+        - ITH1
+        - ITH2 # trentino alto adige
+        - ITH43  # GO
+        - ITH44  # TS
+        - SI04
+        - HR036 # Istria
+      Dalmacija:
+        label: "Dalmacija"
+        label_options:
+          y: 2
+          x: 1
+          rotation: 20
+        codes:
+        # - HR # istria
+        - SI03
+        - HR02
+        - HR05
+        - HR06
+        - HR031
+        - HR032
+        - HR033
+        - HR034
+        - HR035
+        - HR037
+        # - BA
       Bohemia:
-      - CZ
+        label_options:
+          x: 2
+        codes:
+        - CZ
       Galizia:
-        - file://tmp-Galizia.geojson
+        codes:
+        - file://data/geojson/map-Galizia.geojson
+        - RO215
       Ungheria:
-        - file://tmp-Ungheria.geojson
+        codes:
+        - file://data/geojson/map-Ungheria.geojson
+      "Venezia":
+        label: "Lombardo\nVeneto"
+        label_options:
+          x: -2
+          y: -1.2
+        codes:
+        - ITH41
+        - ITH42
+        - 'ITC42'
+        - 'ITC43'
+        - 'ITC44'
+        - 'ITC46'
+        - 'ITC47'
+        - 'ITC49'
+        - 'ITC4A'
+        - 'ITC4B'
+        - 'ITC4C'
+        - 'ITC4D'
+        - 'ITH3'
+
   "Ottomano":
     config:
       facecolor1: "#76cfe7"
-      facecolor2: "#2c97ba"
+      facecolor2: "#6d7054"
     tmp:
       Serbia:
         - RS2
@@ -416,46 +596,69 @@ maps:
       - address: Belgrado, Serbia
         <<: *small_city
 
-    territori:
-
-      Albania:
-      - AL
-      "Grecia":
-      - EL3
-      - EL4
-      - EL6
-      - EL52
-      - EL53
-      - EL54
-      Bulgaria:
-       - BG
-       - EL51
-      Romania:
-      - RO2
-      - RO3
-      - RO41
+    regions:
       Serbia:
-        - "file://tmp-Serbia.geojson"
+        codes:
+        - "file://data/geojson/map-Serbia.geojson"
+        - BA
+      Albania:
+        label_options:
+          rotation: 90
+        codes:
+        - AL
+      Grecia:
+        label_options:
+          x: -6
+          y: 14
+          rotation: 0
+        codes:
+        - EL3
+        - EL4  # In 1880 Creta was under the Ottoman empire
+        - EL6
+        - EL52
+        - EL53
+        - EL54
+      Bulgaria:
+        codes:
+        - BG
+        - EL51
+      Romania:
+        label_options:
+          y: -2
+        codes:
+        - RO211
+        - RO212
+        - RO213
+        - RO214
+        - RO216
+        - RO22
+        - RO3
+        - RO41
+
       Turkiye:
-      - TR1
-      - TR21 # Tracia
-      - TR22
-      - TR4
-      - TR8
-      # Antalia:
-      - TR3
-      - TR5
-      - TR6
-      - TR7
+        codes:
+        - TR1
+        - TR21 # Tracia
+        - TR22
+        - TR4
+        - TR8
+        - TR3
+        - TR5
+        - TR6
+        - TR7
+        - CY
+
   France:
+    label: France
     config:
       facecolor1: "#a676c9"
-      facecolor2: "#6d1195"
+      facecolor2: "#87a2c7"
     citta:
       - address: Paris, France
       - address: Lille, France
       - address: Marseille, France
       - address: Nizza, France
+        <<: *small_city
       - address: Lione, France
         <<: *small_city
       - address: Tolosa, France
@@ -480,35 +683,54 @@ maps:
         <<: *small_city
       - address: Grenoble, France
         <<: *small_city
-    territori:
-      "Provence":
+    regions:
+      Provence:
+        label: "Provence & Corsica"
+        codes:
         - FRJ # Occitanie
-        - FRK # Auvergne
-        - FRL # Auvergne
+        - FRK1 # Auvergne
+        - FRK21 # Rhone-Alpes
+        - FRK22
+        - FRK23
+        - FRK24
+        - FRK25
+        - FRK26
+        - FRL01 # Provence-Alpes-Cote d'Azur
+        - FRL02
+        - FRL04
+        - FRL05
+        - FRL06
         - FRM # Corsica
+        - 9407 # Andorra
       Bretagne:
+        codes:
         - FRG # Pays de la Loire
         - FRD
         - FRH
       Aquitaine:
+        label_options:
+          rotation: 80
+        codes:
         - FRI
       Borgougne:
+        codes:
         - FRC  # Bourgougne
         - FRE  # Haute de France
         - FRF31 # franca contea
         - FRF32
         - FRF34
         - FRF2
+        - FRF33
+        - FRF1
+
       Paris:
+        codes:
         - FR1 # paris
         - FRB # centre
   Italia:
     config:
       facecolor1: darkgreen
-      facecolor2: green
-    translate:
-      - 0.0
-      - 0.0
+      facecolor2: '#447447'
     citta:
       - address: Roma, Italy
       - address: Milano, Italy
@@ -521,37 +743,70 @@ maps:
         <<: *small_city
       - address: Torino, Italia
         <<: *small_city
-    territori:
-      "Torino":
-      - ITC1
-      - ITC2
-      - ITC3
-      - 'ITC41'
-      - ITC48
-      "Venezia":
-      - ITH41
-      - ITH42
-      - 'ITC42'
-      - 'ITC43'
-      - 'ITC44'
-      - 'ITC46'
-      - 'ITC47'
-      - 'ITC49'
-      - 'ITC4A'
-      - 'ITC4B'
-      - 'ITC4C'
-      - 'ITC4D'
-      - 'ITH3'
-      - ITH5 # Emilia
+      - address: Palermo, Italia
+        <<: *small_city
+      - address: Cagliari, Italia
+        <<: *small_city
+      - address: Genova, Italia
+        <<: *small_city
+      - address: Pisa, Italia
+        <<: *small_city
+      - address: Bari, Italia
+        <<: *small_city
+      - address: Bergamo, Italia
+        <<: *small_city
+    regions:
+      Torino:
+        label: Piemonte
+        label_options:
+          y: -1
+          rotation: 20
+        codes:
+        - ITC1
+        - ITC2
+        - ITC3
+        - 'ITC41'
+        - ITC48
+        - FRK27
+        - FRK28
+        - FRL03
+      Toscana:
+        label_options:
+          rotation: -55
+          y: 1
+          x: -1.8
+        codes:
+        - ITH51
+        - ITH52
+        - ITH53
+        - ITH54
+        - ITI1
 
-      "Napoli\n&\nSicilia":
-      - ITF # regno di napoli
-      - ITG1 # sicilia
+      Napoli:
+        label: "Regno\ndelle due\nSicilie"
+        label_options:
+          y: 2
+          x: -1
+        codes:
+        - ITF # regno di napoli
+        - ITG1 # sicilia
       Roma:
-      - ITI2
-      - ITI3
-      - ITI4
-      - ITI1
+        label_options:
+          rotation: 55
+          y: -1
+        codes:
+        - ITI2
+        - ITI3
+        - ITI4
+        - ITH55
+        - ITH56
+        - ITH57
+        - ITH58
+        - ITH59
+        - 54624 # RSM
+        - 36989  # VA
       "Sardegna":
-      - ITG2 # sardegna
-
+        label_options:
+          rotation: 90
+        codes:
+        - ITG2 # sardegna

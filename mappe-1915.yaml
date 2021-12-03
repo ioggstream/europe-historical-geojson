@@ -1,0 +1,572 @@
+regions:
+  Koenigsberg:
+    - 223408
+    - 103906
+  Brandenburg:
+    - 130969
+  Pomerania:
+    - 130971 Poznan
+    - 2406440
+    - 224460 # Opole
+  Polska:
+    - 130914
+    #        - 130914 #
+    #        - 130935 # Warszawa
+    #        - 130919  # Lublin
+    #        - 224461 # Czestochowa
+    #        - 224458 # Łodz
+    #        - PL414
+    #        - PL416
+    #        - PL61
+    #        - PL62
+
+europe_borders: {
+  # y1, x1 = 62.0, 35.0
+  # y0, x0 = 34.0, -11.0
+  'geometry': {'type': 'Polygon',
+                'coordinates': [[[-11.0, 34.0],
+                                 [-11.0, 62.0],
+                                 [35.0, 62.0],
+                                 [35.0, 34.0],
+                                 [-11.0, 34.0]]]},
+   'properties': {
+     'name': 'Europe Borders'
+   }
+  }
+
+constants:
+  large_city: &large_city
+    size: 24
+    text: "\u2299"
+  small_city: &small_city
+    size: 10
+    text: "●"
+
+seas:
+  - Mare Adriatico
+  - Mar Mediterraneo
+  - Mar Tirreno
+  - Mar Baltico
+  - Oceano Atlantico
+  - Mar Egeo
+  - Mar Ligure
+  - Mare del Nord
+  - Mar Nero
+  - Mar Ionio
+  - Golfo di Biscaglia
+  - Stretto di Gibilterra
+maps:
+  Neutrali:
+    config:
+      facecolor1: "none"
+      facecolor2: "none"
+    regions:
+      Svizzera:
+        - CH
+  "United Kingdom":
+    config:
+      facecolor1: '#4735bc'
+      facecolor2: '#4735bc'
+    # translate: [-1.0, -2.0]
+    citta:
+      - address: London, UK
+      - address: Manchester, UK
+      - address: Dublin, Ireland
+    regions:
+      Scotland:
+        - UKM
+      Wales:
+        - UKL
+        - UKG
+      Yorkshire:
+        - UKC
+        - UKD
+        - UKE
+      London:
+        - UKH
+        - UKI
+        - UKF
+        - UKJ
+        - UKK
+      Ireland:
+        - IE
+        - UKN
+  Russia:
+    config:
+      facecolor1: darkred
+      facecolor2: red
+    citta:
+      - address: Mosca, Russia
+      - address: Sankt Petersbourg, Russia
+      - address: Varsavia, Poland
+      - address: Lipeck, Russia
+        <<: *small_city
+      - address: Orel, Russia
+        <<: *small_city
+      - address: Brjansk, Russia
+        <<: *small_city
+      - address: Vladimir, Russia
+        <<: *small_city
+      - address: Mahilev, Belarus
+        <<: *small_city
+      - address: Minsk, Belarus
+        <<: *small_city
+      - address: Tallinn, Eesti
+        <<: *small_city
+      - address: Vilnius, Lithuania
+        <<: *small_city
+      - address: Riga, Latvia
+        <<: *small_city
+      - address: Tver, Russia
+        <<: *small_city
+      - address: Kaluga, Russia
+        <<: *small_city
+      - address: Penza, Russia
+        <<: *small_city
+      - address: Jaroslavl, Russia
+        <<: *small_city
+      - address: Helsinki, Finland
+        <<: *small_city
+      - address: Poltava, Ukraina
+        <<: *small_city
+      - address: Cerkasy, Ukraina
+        <<: *small_city
+
+    country-borders: urss.geojson
+    regioni:
+        Ucraina:
+        - 72634 # Odessa
+        - 71022 # Cherson
+        - 71236
+        - 71248 # Kiev
+        - 58974 # MD
+        #      - 42866 # Kiev
+        - 71236 # Rivne
+        - 71245 # Zitomir
+        - 72639 # Crimea
+        - 71064 # Volinia
+        - 71249 # Chernihiv ? HU
+        - 72635
+        - 71971
+        - 90726
+        - 91294
+        - 71250 # Sumy
+        - 71254
+        - 71980 # Zaporizhia
+        - 91278 # Cherkasy
+        - 90742 # Chmelnyckyk
+        - 101746 # Dnipr
+        - 101859 # Kirowhrad
+        - 393980  # Karelia
+        Pietroburgo:
+        # - 54224  # Finland
+        - FI
+        - 393980
+        - 176095
+        - 155262  # Pskov
+        - 337422  # Pietroburgo
+        - 89331 # Novograd Grande
+    regions:
+      Moskva:
+        - 1029256
+      "Finland\n&\nSankt Peterburg":
+      #  - file://data/geojson/map-Pietroburgo.geojson
+        - FI
+        - 393980  # Carelia
+        - 176095
+        - 155262  # Pskov
+        - 337422  # Pietroburgo
+        - 89331 # Novograd Grande
+      "Paesi\nBaltici": ["EE", "LT", "LV"]
+      Ukraina:
+        - file://data/geojson/map-Ucraina.geojson
+      Bielarus:
+        - BY  # 59065
+      Polska:
+        - file://data/geojson/poland-1914.geojson
+  Indipendenti:
+    config:
+      facecolor1: orange
+      facecolor2: orange
+    citta:
+      - address: Amsterdam, Netherlands
+        <<: *small_city
+      - address: Anversa, Belgium
+        <<: *small_city
+      - address: Barcelona, Spain
+        <<: *small_city
+      - address: Lisboa, Portugal
+        <<: *small_city
+      - address: Madrid, Spain
+        <<: *small_city
+      - address: Oslo, Norway
+        <<: *small_city
+      - address: Bergen, Norway
+        <<: *small_city
+      - address: Stockholm, Sweden
+        <<: *small_city
+      - address: Goteborg, Sweden
+        <<: *small_city
+      - address: Copenhagen, Denmark
+        <<: *small_city
+      - address: Coimbra, Portugal
+        <<: *small_city
+      - address: Sevilla, Espana
+        <<: *small_city
+      - address: Melilla, Espana
+        <<: *small_city
+      - address: Ceuta, Espana
+        <<: *small_city
+      - address: Bilbao, Espana
+        <<: *small_city
+      - address: Valencia, Espana
+        <<: *small_city
+      - address: Granada, Espana
+        <<: *small_city
+      - address: Saragozza, Espana
+        <<: *small_city
+      - address: Cordova, Espana
+        <<: *small_city
+      - address: Toledo, Espana
+        <<: *small_city
+      - address: Salamanca, Espana
+        <<: *small_city
+      - address: Pamplona, Espana
+        <<: *small_city
+    regions:
+      # Svizzera:
+       #- "CH"
+      Portugal:
+      - "PT"
+      Catalunya:
+        - ES1
+        - ES2
+        - ES5
+      Castilla:
+        - ES3
+        - ES4
+        - ES6
+        - MA
+      Denmark:
+        - "DK"
+      Sverige:
+        - "SE"
+      Norway:
+        - "NO"
+      Benelux:
+        - BE
+        - NL
+        - LU
+      Serbia:
+        - "file://data/geojson/map-Serbia.geojson"
+      Albania:
+      - AL
+      Grecia:
+      - EL3
+      - EL4  # In 1880 Creta was under the Ottoman empire
+      - EL6
+      - EL52
+      - EL53
+      - EL54
+
+
+  "Deutschland":
+    citta:
+    - address: Berlino, Germania
+    - address: Amburgo, Germania
+    - address: Monaco di baviera, Germania
+    - address: Norimberga, Germania
+      <<: *small_city
+    - address: Lipsia, Germania
+      <<: *small_city
+    - address: Hannover, Germania
+      <<: *small_city
+    - address: Kassel, Germania
+      <<: *small_city
+    - address: Bielefeld, Germania
+      <<: *small_city
+    - address: Brema, Germania
+      <<: *small_city
+    - address: Flensburgo, Germania
+      <<: *small_city
+    - address: Lubecca, Germania
+      <<: *small_city
+    - address: Dresda, Germania
+      <<: *small_city
+    config:
+      facecolor1: "#c37437"
+      facecolor2: "#c54e25"
+    country-borders: germany-1914-boundaries.geojson #"data/geojson/germany-1914.geojson"
+    regions:
+      "Bayern - Baviera":
+        - FRF33
+        - FRF1
+        - DE1
+        - DE2
+        - DE7 # Hesse
+      "Preussen - Prussia":
+        - 103906 # Konigsberg
+        - PL6 # Pomerania
+        - PL41 # Pomerania
+        - PL42
+        #- PL415 # Posen #- PL417 #- PL411 #- PL418
+      "Sachsen - Sassonia":
+        - PL22 # Slesia
+        - PL5 # Slesia
+        - PL43
+        - DED # Sachsen
+      "Rhine - Renania":
+        - DE5
+        - DE6
+        - DK032
+        - DE9 # Bassa Sassonia
+        - DEA
+        - DEF
+        - DEB
+        - DEC # Saarland
+      Berlin:
+        - DE3
+        - DE4
+        - DEG
+        - DE8 # Meclemburgo-Pomerania
+        - DEE # Sachsen-Anhalt
+      #  - 130969 # Polonia
+  Asburgici:
+    config:
+      facecolor1: '#d5c232'
+      facecolor2: '#b3aa1b'
+    citta:
+      - address: Wien, AT
+      - address: Budapest, HU
+      - address: Praha, CZ
+      - address: Cracovia, PL
+        <<: *small_city
+      - address: Leopoli, UA
+        <<: *small_city
+      - address: Bolzano, IT
+        <<: *small_city
+      - address: Trieste, IT
+        <<: *small_city
+      - address: Bratislava, SK
+        <<: *small_city
+      - address: Sarajevo, BH
+        <<: *small_city
+      - address: Wroclaw, PL
+        <<: *small_city
+      - address: Czestochowa, PL
+        <<: *small_city
+      - address: KraKòw, PL
+        <<: *small_city
+      - address: Katowice, PL
+        <<: *small_city
+      - address: Ostrava, PL
+        <<: *small_city
+      - address: Brno, CZ
+        <<: *small_city
+
+    regioni:
+      Ungheria:
+      - HU
+      - RO1
+      - RO42
+      - SK
+      - 72489 # Trans-carpazia UA
+      - RS12
+      Galizia:
+      - PL21
+      - PL225
+      - 130957 # Pre-carpazia PL
+      - 72380 # Leopoli
+      - 72488 # Ivano-Frankivsk
+      - 72525 # Ternopil
+      - 72526 # Chernivitsi UA
+
+    regions:
+      Wien:
+      - AT
+      - ITH1
+      - ITH2 # trentino alto adige
+      "Trieste &\nDalmacija":
+      - ITH43  # GO
+      - ITH44  # TS
+      - SI
+      - HR # istria
+      - BA
+      Bohemia:
+      - CZ
+      Galizia:
+        - file://data/geojson/map-Galizia.geojson
+      Ungheria:
+        - file://data/geojson/map-Ungheria.geojson
+  "Ottomano":
+    config:
+      facecolor1: "#76cfe7"
+      facecolor2: "#6d7054"
+    tmp:
+      Serbia:
+        - RS2
+        - RS11
+        - MK
+        - ME
+        - 2088990
+    citta:
+      - address: Istanbul, Turchia
+      - address: Atene, Grecia
+      - address: Sofia, BG
+      - address: Ankara, Turchia
+        <<: *small_city
+      - address: Bucarest, RO
+        <<: *small_city
+      - address: Tirana, Albania
+        <<: *small_city
+      - address: Salonicco, Grecia
+        <<: *small_city
+      - address: Smirne, Turchia
+        <<: *small_city
+      - address: Skopje, Macedonia
+        <<: *small_city
+      - address: Belgrado, Serbia
+        <<: *small_city
+
+    regions:
+      Cipro:
+      - CY
+      Bulgaria:
+       - BG
+       - EL51
+      Romania:
+      - RO2
+      - RO3
+      - RO41
+      Turkiye:
+      - TR1
+      - TR21 # Tracia
+      - TR22
+      - TR4
+      - TR8
+      Egea:
+      - TR3
+      Antalia:
+      - TR5
+      - TR6
+      - TR7
+  France:
+    config:
+      facecolor1: "#a676c9"
+      facecolor2: "#87a2c7"
+    citta:
+      - address: Paris, France
+      - address: Lille, France
+      - address: Marseille, France
+      - address: Nizza, France
+        <<: *small_city
+      - address: Lione, France
+        <<: *small_city
+      - address: Tolosa, France
+        <<: *small_city
+      - address: Strasburgo, France
+        <<: *small_city
+      - address: Bordeaux, France
+        <<: *small_city
+      - address: Rouen, France
+        <<: *small_city
+      - address: Nantes, France
+        <<: *small_city
+      - address: Le Havre,France
+        <<: *small_city
+      - address: Montpellier, France
+        <<: *small_city
+      - address: Aix-en-Provence,France
+        <<: *small_city
+      - address: Avignone, France
+        <<: *small_city
+      - address: Annecy, France
+        <<: *small_city
+      - address: Grenoble, France
+        <<: *small_city
+    regions:
+      "Provence & Corsica":
+        - FRJ # Occitanie
+        - FRK # Auvergne
+        - FRL # Auvergne
+        - FRM # Corsica
+      Bretagne:
+        - FRG # Pays de la Loire
+        - FRD
+        - FRH
+      Aquitaine:
+        - FRI
+      Borgougne:
+        - FRC  # Bourgougne
+        - FRE  # Haute de France
+        - FRF31 # franca contea
+        - FRF32
+        - FRF34
+        - FRF2
+      Paris:
+        - FR1 # paris
+        - FRB # centre
+  Italia:
+    config:
+      facecolor1: darkgreen
+      facecolor2: '#447447'
+    translate:
+      - 0.0
+      - 0.0
+    citta:
+      - address: Roma, Italy
+      - address: Milano, Italy
+      - address: Napoli, Italy
+      - address: Firenze, Italy
+        <<: *small_city
+      - address: Bologna, Italy
+        <<: *small_city
+      - address: Venezia, Italia
+        <<: *small_city
+      - address: Torino, Italia
+        <<: *small_city
+      - address: Palermo, Italia
+        <<: *small_city
+      - address: Cagliari, Italia
+        <<: *small_city
+      - address: Genova, Italia
+        <<: *small_city
+      - address: Pisa, Italia
+        <<: *small_city
+      - address: Bari, Italia
+        <<: *small_city
+      - address: Bergamo, Italia
+        <<: *small_city
+    regions:
+      "Torino":
+      - ITC1
+      - ITC2
+      - ITC3
+      - 'ITC41'
+      - ITC48
+      "Venezia":
+      - ITH41
+      - ITH42
+      - 'ITC42'
+      - 'ITC43'
+      - 'ITC44'
+      - 'ITC46'
+      - 'ITC47'
+      - 'ITC49'
+      - 'ITC4A'
+      - 'ITC4B'
+      - 'ITC4C'
+      - 'ITC4D'
+      - 'ITH3'
+      - ITH5 # Emilia
+
+      "Napoli\n&\nSicilia":
+      - ITF # regno di napoli
+      - ITG1 # sicilia
+      Roma:
+      - ITI2
+      - ITI3
+      - ITI4
+      - ITI1
+      "Sardegna":
+      - ITG2 # sardegna
