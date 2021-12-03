@@ -36,10 +36,10 @@ europe_borders: {
 
 constants:
   large_city: &large_city
-    size: 24
+    fontsize: 24
     text: "\u2299"
   small_city: &small_city
-    size: 10
+    fontsize: 10
     text: "●"
 
 seas:
@@ -169,28 +169,20 @@ maps:
       facecolor1: darkred
       facecolor2: red
     citta:
-      - address: Moskva, Russia
+      - address: Moscow, Russia
       - address: Sankt Petersbourg, Russia
       - address: Varsavia, Poland
       - address: Orel, Russia
         <<: *small_city
       - address: Brjansk, Russia
         <<: *small_city
-      #- address: Lipeck, Russia
-      #  <<: *small_city
-      #- address: Vladimir, Russia
-      #  <<: *small_city
-      #- address: Jaroslavl, Russia
-      #  <<: *small_city
-      - address: Mahilev, Belarus
-        <<: *small_city
       - address: Tver, Russia
         <<: *small_city
-      #- address: Kaluga, Russia
-      #  <<: *small_city
       - address: Penza, Russia
         <<: *small_city
       - address: Minsk, Belarus
+        <<: *small_city
+      - address: Mahilev, Belarus
         <<: *small_city
       - address: Tallinn, Eesti
         <<: *small_city
@@ -346,7 +338,7 @@ maps:
         - ES3
         - ES4
         - ES6
-        - MA
+#        - MA
       Denmark:
         codes:
         - "DK"

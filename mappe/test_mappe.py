@@ -11,12 +11,13 @@ from . import (
     ctx,
     get_board,
     get_state,
+    intersect,
     maps,
     plot_net,
     prepare_neighbor_net,
     togli_isolette,
 )
-from .utils import get_cache_filename
+from .utils import annotate_coords, get_cache_filename
 
 
 def test_render_background_ok():
@@ -39,6 +40,29 @@ def test_save_states():
             pass
         fpath = get_cache_filename(c)
         df.to_file(fpath, driver="GeoJSON")
+
+def test_generate_net():
+    fig, ax = get_board()
+    df = get_state(COUNTRIES[0])
+    for x in COUNTRIES[1:]:
+        df = df.append(get_state(x))
+    df = intersect(df, _get_europe())
+    df.plot(ax=ax)
+    nbr={}
+    prepare_neighbor_net(df,nbr)
+    plot_net(nbr, ax)
+
+    for region_id, values in nbr.items():
+        annotate_coords(
+            values["coords"],
+            f"w: {values['count']}",
+            textcoords="offset points",
+            xytext=(-20, -20),
+            ax=ax,
+            color="black"
+        )
+
+    fig.savefig("./tmp-nbr_net.png")
 
 
 def test_stats():

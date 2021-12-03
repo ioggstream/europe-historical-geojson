@@ -430,7 +430,7 @@ def get_state_archive():
     return state_archive
 
 
-def render_board(countries=COUNTRIES, background=False, plot_cities=True, render_net=False, **kwargs):
+def render_board(countries=COUNTRIES, background=False, plot_cities=True, render_net=True, render_links=False, **kwargs):
     fig_risk, risk_board = get_board()
     fig_label, label_board = get_board()
     fig_full, full_board = get_board()
@@ -442,8 +442,9 @@ def render_board(countries=COUNTRIES, background=False, plot_cities=True, render
 
     countries = countries or COUNTRIES
     get_state_archive()
-    render_links(ax=full_board)
-    render_links(ax=links_board)
+    if render_links:
+        render_links(ax=full_board)
+        render_links(ax=links_board)
 
     with Pool(processes=20) as pool:
         #    pool.map(partial(render_state, ax=risk_board, plot_geo=True, plot_labels=False, plot_cities=False, plot_state_labels=False), countries)
@@ -458,35 +459,42 @@ def render_board(countries=COUNTRIES, background=False, plot_cities=True, render
             ),
             countries,
         )
-    #    pool.map(partial(render_state, ax=label_board, plot_geo=False, plot_labels=True, plot_cities=True,  plot_state_labels=False), countries)
+        #    pool.map(partial(render_state, ax=label_board, plot_geo=False, plot_labels=True, plot_cities=True,  plot_state_labels=False), countries)
     #    pool.map(partial(render_state, ax=links_board, plot_geo=False, plot_labels=False, plot_cities=False, plot_state_labels=False), countries)
 
 #    render_seas(ax=full_board)
 
     if render_net:
-        nbr = {}
-        df = get_state(COUNTRIES[0])
-        for x in COUNTRIES[1:]:
-            df = df.append(get_state(x))
-        prepare_neighbor_net(df, nbr)
-        plot_net(nbr, risk_board)
-        df.plot(ax=risk_board)
-
-        for region_id, values in nbr.items():
-            annotate_coords(
-                values["coords"],
-                f"w: {values['count']}",
-                textcoords="offset points",
-                xytext=(-20, -20),
-            )
+        add_neighbour_net(risk_board)
 
     # add_basemap(full_board, crs=str(MY_CRS), )
     suffix = get_suffix()
     cfg = dict(dpi=92, bbox_inches="tight", transparent=True)
     fig_full.savefig(f"/tmp/full-board-{suffix}.png", **cfg)
-#    fig_risk.savefig(f"/tmp/risk-board-{suffix}.png", **cfg)
+    fig_risk.savefig(f"/tmp/risk-board-{suffix}.png", **cfg)
 #    fig_label.savefig(f"/tmp/label-board-{suffix}.png", **cfg)
 #    fig_links.savefig(f"/tmp/links-board-{suffix}.png", **cfg)
+
+
+def add_neighbour_net(ax):
+    log.warning("Rendering net.")
+    nbr = {}
+    df = get_state(COUNTRIES[0])
+    for x in COUNTRIES[1:]:
+        df = df.append(get_state(x))
+    df = df.intersects(_get_europe())
+    prepare_neighbor_net(df, nbr)
+    plot_net(nbr, ax)
+    df.plot(ax=ax, color='blue')
+
+    for region_id, values in nbr.items():
+        annotate_coords(
+                values["coords"],
+                f"w: {values['count']}",
+                textcoords="offset points",
+                # xytext=(-20, -20),
+                ax=ax
+            )
 
 
 def get_board():

@@ -29,12 +29,12 @@ import os
 
 
 def get_cache_filename(state):
-    suffix = get_suffix().split(".")[0]
+    suffix = get_suffix()
     return f"tmp-{suffix}-{state}.geojson"
 
 
 def get_suffix():
-    return os.path.basename(os.environ.get("MAPPE_YAML", "mappe.yaml"))
+    return os.path.basename(os.environ.get("MAPPE_YAML", "mappe.yaml")).split(".")[0]
 
 
 def get_config(fpath="mappe.yaml"):
@@ -78,7 +78,6 @@ def annotate_coords(xy, text, state_label=None, ax=plt, padding=(0, 0), **kwargs
         state_config = maps()[state_label]
         tx, ty = state_config.get("translate", [0, 0])
         a11, a22 = state_config.get("scale", [1, 1])
-        from shapely.geometry import Point
         xy = GeoSeries(Point(xy[0], xy[1])).affine_transform([a11, 0, 0, a22, tx, ty]).geometry[0].coords[:][0]
 
     xytext = kwargs.get("xytext", None)
@@ -97,7 +96,8 @@ def annotate_coords(xy, text, state_label=None, ax=plt, padding=(0, 0), **kwargs
 
 def geolocate(address):
     from geopy.geocoders import MapQuest
-
+    import requests_cache
+    requests_cache.install_cache("geopy_cache")
     log.warning(f"geolocate {address}")
     try:
         geolocator = MapQuest(
