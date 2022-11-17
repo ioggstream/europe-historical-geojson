@@ -95,8 +95,8 @@ def annotate_coords(xy, text, state_label=None, ax=plt, padding=(0, 0), **kwargs
 
 
 def geolocate(address):
-    from geopy.geocoders import MapQuest
     import requests_cache
+    from geopy.geocoders import MapQuest
     requests_cache.install_cache("geopy_cache")
     log.warning(f"geolocate {address}")
     try:

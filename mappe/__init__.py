@@ -404,10 +404,10 @@ def render_links(ax):
             src = baricenter(found_region)
         else:
             src = tuple(geolocate(src))
-        
+
         found_region = find_region(dst)
         if found_region is not None:
-            dst = baricenter(found_region)        
+            dst = baricenter(found_region)
         else:
             dst = tuple(geolocate(dst))
 
@@ -421,7 +421,7 @@ def get_state_archive():
     global state_archive
     if len(state_archive):
         return state_archive
-    
+
     for c in COUNTRIES:
         state_ = get_state(c)
         state_archive.update({

@@ -129,10 +129,12 @@ def test_render_labels_ok():
 
 
 
+from functools import partial
 from multiprocessing import Pool
 
 from . import render_state
-from functools import partial
+
+
 def test_render_cities_ok():
     fig_label, label_board = get_board()
     with Pool(processes=20) as pool:
@@ -166,4 +168,3 @@ def test_render_state_labels_ok():
             COUNTRIES,
         )
     fig_label.savefig("state_labels-board.eps", dpi=300, transparent=True, format="eps")
-

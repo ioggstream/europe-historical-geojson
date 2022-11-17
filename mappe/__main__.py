@@ -1,6 +1,7 @@
-from sys import argv
 import click
+
 from . import render_board, test_render_background_masked_ok
+
 
 @click.command()
 @click.argument('countries', nargs=-1)
