@@ -226,7 +226,7 @@ def get_state(state_name, cache=True, save=False) -> GeoDataFrame:
     geo_config = state_config.get("country-borders")
     if geo_config:
         # import pdb; pdb.set_trace()
-        borders = gpd.read_file(open(geo_config), crs=EPSG_4326_WGS84).unary_union
+        borders = get_country_borders(state_config)
         ret.geometry = ret.geometry.intersection(borders)
 
     ret = ret.set_crs(EPSG_4326_WGS84)
@@ -234,6 +234,25 @@ def get_state(state_name, cache=True, save=False) -> GeoDataFrame:
         ret.geometry = ret.geometry.affine_transform([scale[0], 0, 0, scale[1], translate[0], translate[1]])
     assert ret.crs == EPSG_4326_WGS84
     return ret
+
+def get_country_borders(state_config):
+    """Evaluate the country borders from the state config.
+        It is computed as the union of all the identifiers containes int the country-borders key.
+    """
+
+    def _open_geojson_or_nuts(label_or_geojson):
+        if label_or_geojson.endswith("json"):
+            return gpd.read_file(open(label_or_geojson), crs=EPSG_4326_WGS84).unary_union
+        return get_area(label_or_geojson).unary_union
+
+    geo_config = state_config.get("country-borders")
+    geo_config = geo_config if isinstance(geo_config, list) else [geo_config]
+
+    borders = None
+    for g in  geo_config:
+        new_borders = _open_geojson_or_nuts(g)
+        borders = new_borders if borders is None else borders.union(new_borders)
+    return borders
 
 
 def intersect(df1: GeoDataFrame, df2: GeoDataFrame) -> GeoDataFrame:

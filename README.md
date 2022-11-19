@@ -13,6 +13,13 @@ dataset of the European Union maps.
 
 ## Build Empires boundaries
 
+Pick a map using for example
+
+```
+# default is mappe.yaml
+export MAPPE=mappe-1915.yaml
+```
+
 To build empire boundaries and avoid stressing OpenStreetmap
 run
 

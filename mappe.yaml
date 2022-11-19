@@ -1,3 +1,6 @@
+#
+# Europe in 1815.
+#
 regions:
   Koenigsberg:
     - 223408
@@ -353,13 +356,12 @@ maps:
         codes:
         - "NO"
       Benelux:
-        label: "Be.Ne.Lux"
+        label: "Netherland\n& Belgium"
         label_options:
           rotation: 80
         codes:
         - BE
         - NL
-        - LU
 
   "Prussia":
     citta:
@@ -387,7 +389,11 @@ maps:
     config:
       facecolor1: "#c37437"
       facecolor2: "#c54e25"
-    country-borders: germany-1914-boundaries.geojson #"data/geojson/germany-1914.geojson"
+    # The country-borders key is used to specify a file containing the borders of the country
+    #   all maps are drawn within the borders of the country.
+    country-borders:
+    - germany-1914-boundaries.geojson #"data/geojson/germany-1914.geojson"
+    - LU
     regions:
       Bayern:
         label: "Bayern \n (Baviera)"
@@ -430,6 +436,7 @@ maps:
           y: -3
           x: -3
         codes:
+        - LU0
         - DE5
         - DE6
         - DK032
@@ -549,11 +556,12 @@ maps:
       "Venezia":
         label: "Lombardo\nVeneto"
         label_options:
-          x: -2
+          x: 0  # -2
           y: -1.2
         codes:
         - ITH41
         - ITH42
+        - 'ITC41'
         - 'ITC42'
         - 'ITC43'
         - 'ITC44'
@@ -733,15 +741,15 @@ maps:
       facecolor2: '#447447'
     citta:
       - address: Roma, Italy
-      - address: Milano, Italy
       - address: Napoli, Italy
+      - address: Torino, Italia
       - address: Firenze, Italy
         <<: *small_city
       - address: Bologna, Italy
         <<: *small_city
       - address: Venezia, Italia
         <<: *small_city
-      - address: Torino, Italia
+      - address: Milano, Italy
         <<: *small_city
       - address: Palermo, Italia
         <<: *small_city
@@ -765,7 +773,6 @@ maps:
         - ITC1
         - ITC2
         - ITC3
-        - 'ITC41'
         - ITC48
         - FRK27
         - FRK28

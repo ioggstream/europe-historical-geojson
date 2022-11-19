@@ -10,6 +10,7 @@ from . import (
     annotate_region,
     ctx,
     get_board,
+    get_country_borders,
     get_state,
     intersect,
     maps,
@@ -20,6 +21,14 @@ from . import (
 from .utils import annotate_coords, get_cache_filename
 
 
+def test_get_country_borders():
+    fig, ax = get_board()
+    borders = get_country_borders(
+        {"country-borders": ["germany-1914-boundaries.geojson", "BE"]})
+    from matplotlib import pyplot as plt
+    plt.plot(borders[0].exterior.xy[0], borders[0].exterior.xy[1])
+    plt.show()
+    raise NotImplementedError
 def test_render_background_ok():
     fig, ax = get_board()
     eu = _get_europe().to_crs(MY_CRS)
