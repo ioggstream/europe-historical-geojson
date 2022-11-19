@@ -1,6 +1,8 @@
 from pathlib import Path
 
+import geopandas as gpd
 import yaml
+from matplotlib import pyplot as plt
 
 from . import (
     COUNTRIES,
@@ -10,7 +12,7 @@ from . import (
     annotate_region,
     ctx,
     get_board,
-    get_country_borders,
+    get_historical_borders,
     get_state,
     intersect,
     maps,
@@ -18,17 +20,44 @@ from . import (
     prepare_neighbor_net,
     togli_isolette,
 )
-from .utils import annotate_coords, get_cache_filename
+from .utils import Config, annotate_coords, get_cache_filename
 
 
-def test_get_country_borders():
+def test_render_background_masked_ok():
+    diff = Config().get_europe().to_crs(MY_CRS)
+    for c in COUNTRIES:
+        diff = diff - get_state(c).to_crs(MY_CRS).unary_union
+
     fig, ax = get_board()
-    borders = get_country_borders(
+    diff.plot(ax=ax, color="lightblue")
+    add_basemap(
+        ax,
+        crs=str(MY_CRS),
+        # source=ctx.providers.Esri.WorldPhysical,
+        source=ctx.providers.Esri.WorldShadedRelief,
+    )
+    fig.savefig("masked-terrain-board.png", dpi=300, transparent=True)
+
+def test_unite_maps():
+    fig, ax = get_board()
+    mask = gpd.read_file(open("germany-1914-boundaries.geojson")).set_crs(
+        EPSG_4326_WGS84
+    )
+    de = get_area("PL")
+    de = de.append(get_area("DE"))
+    de = intersect(de, mask)
+    de.plot(ax=ax)
+    print(de)
+    fig.savefig("/tmp/test-intersect.png")
+
+
+def test_get_historical_borders():
+    borders = get_historical_borders(
         {"country-borders": ["germany-1914-boundaries.geojson", "BE"]})
-    from matplotlib import pyplot as plt
     plt.plot(borders[0].exterior.xy[0], borders[0].exterior.xy[1])
     plt.show()
-    raise NotImplementedError
+
+
 def test_render_background_ok():
     fig, ax = get_board()
     eu = _get_europe().to_crs(MY_CRS)

@@ -1,13 +1,10 @@
-import json
 import logging
 from functools import partial
-from io import StringIO
 from multiprocessing.pool import ThreadPool as Pool
 from pathlib import Path
 from typing import List
 from urllib.parse import parse_qs, urlparse
 
-import contextily as ctx
 import geopandas as gpd
 import matplotlib
 import matplotlib.pyplot as plt
@@ -21,7 +18,16 @@ from shapely.geometry import MultiPolygon, Polygon, shape
 from shapely.ops import cascaded_union
 
 from .constants import *
-from .utils import *
+from .utils import (
+    Config,
+    annotate_coords,
+    baricenter,
+    geoline,
+    get_polygons,
+    log,
+    maps,
+    seas,
+)
 
 FONT_REGION = "eufm10"
 FONT_ARIAL = "DejaVu Sans"
@@ -36,20 +42,7 @@ requests_cache.install_cache("demo_cache")
 
 COUNTRIES = tuple(maps().keys())
 
-def test_render_background_masked_ok():
-    diff = _get_europe().to_crs(MY_CRS)
-    for c in COUNTRIES:
-        diff = diff - get_state(c).to_crs(MY_CRS).unary_union
 
-    fig, ax = get_board()
-    diff.plot(ax=ax, color="lightblue")
-    add_basemap(
-        ax,
-        crs=str(MY_CRS),
-        # source=ctx.providers.Esri.WorldPhysical,
-        source=ctx.providers.Esri.WorldShadedRelief,
-    )
-    fig.savefig("masked-terrain-board.png", dpi=300, transparent=True)
 
 
 def prepare_neighbor_net(gdf: GeoDataFrame, nbr: dict):
@@ -76,19 +69,6 @@ def plot_net(nbr, ax):
         for d in v["nbr"]:
             y = nbr[d]["coords"]
             geoline(x, y).plot(ax=ax, color="red")
-
-
-def _get_europe() -> GeoDataFrame:
-    europe = config()["europe_borders"]
-    eu_area = gpd.read_file(StringIO(json.dumps(europe)))
-    eu_area = eu_area.set_crs(EPSG_4326_WGS84)
-    return eu_area
-
-
-def get_axis():
-    fig, ax = plt.subplots(1, 1)
-    fig.set_size_inches(10, 10)
-    return fig, ax
 
 
 def get_area(label) -> GeoSeries:
@@ -182,82 +162,85 @@ def get_polygons(label, retry=0):
     return ret.content.decode()
 
 
-def get_regions(state_label) -> dict:
-    """@returns: a dict containing all the regions' geometries.
-    """
-    regions = maps()[state_label]["regions"]
-    return {k: join_areas(v["codes"]) for k, v in regions.items()}
 
 
-def get_state(state_name, cache=True, save=False) -> GeoDataFrame:
-    """:return a WGS84 geodataframe eventually intersected with the rest"""
-    state_config = maps()[state_name]
-    translate = state_config.get("translate", [0, 0])
-    scale = state_config.get("scale", [1.0, 1.0])
 
-    f = state_name.replace("\n", " ")
-    cache_file = Path(get_cache_filename(f))
-    if cache and cache_file.exists():
-        log.warning(f"Reading from {cache_file}")
-        ret = gpd.read_file(cache_file.open())
-        assert ret.crs == EPSG_4326_WGS84
+class State:
+    def __init__(self, state_name, config):
+        self.name = state_name
+        self.config = config
+        self._state = config.maps[state_name]
+
+
+    def get_regions(self) -> dict:
+        """@returns: a dict containing all the regions' geometries.
+        """
+        regions = self._state["regions"]
+        return {k: join_areas(v["codes"]) for k, v in regions.items()}
+
+    def get_state(self, cache=True, save=False) -> GeoDataFrame:
+        """:return a WGS84 geodataframe eventually intersected with the rest"""
+        state_config = self._state
+        translate = state_config.get("translate", [0, 0])
+        scale = state_config.get("scale", [1.0, 1.0])
+
+        f = self.name.replace("\n", " ")
+        cache_file = Path(self.config.get_cache_filename(f))
+        if cache and cache_file.exists():
+            log.warning(f"Reading from {cache_file}")
+            ret = gpd.read_file(cache_file.open())
+            assert ret.crs == EPSG_4326_WGS84
+            if not save:
+                ret.geometry = ret.geometry.affine_transform([scale[0], 0, 0, scale[1], translate[0], translate[1]])
+
+            return ret
+        regions = list(self.get_regions().items())
+        n, t = regions[0]
+
+        df = DataFrame({"name": [n], "state": [self.name]})
+        ret = gpd.GeoDataFrame(df, geometry=t, crs=EPSG_4326_WGS84)
+        for n, t in regions[1:]:
+            ret = ret.append(
+                gpd.GeoDataFrame(
+                    DataFrame({"name": [n], "state": [self.name]}),
+                    geometry=t,
+                    crs=EPSG_4326_WGS84,
+                )
+            )
+        ret = ret.reset_index()
+
+        #
+        # Restrict state borders using a specific geojson.
+        #
+        if borders:= self.get_historical_borders():
+            ret.geometry = ret.geometry.intersection(borders)
+
+        ret = ret.set_crs(EPSG_4326_WGS84)
         if not save:
             ret.geometry = ret.geometry.affine_transform([scale[0], 0, 0, scale[1], translate[0], translate[1]])
-
+        assert ret.crs == EPSG_4326_WGS84
         return ret
-    regions = list(get_regions(state_name).items())
-    n, t = regions[0]
 
-    df = DataFrame({"name": [n], "state": [state_name]})
-    ret = gpd.GeoDataFrame(df, geometry=t, crs=EPSG_4326_WGS84)
-    for n, t in regions[1:]:
-        ret = ret.append(
-            gpd.GeoDataFrame(
-                DataFrame({"name": [n], "state": [state_name]}),
-                geometry=t,
-                crs=EPSG_4326_WGS84,
-            )
-        )
-    ret = ret.reset_index()
+    def get_historical_borders(self):
+        """Evaluate the country borders from the state config.
+            It is computed as the union of all the identifiers containes int the country-borders key.
+        """
 
-    #
-    # Restrict state borders using a specific geojson.
-    #
-    geo_config = state_config.get("country-borders")
-    if geo_config:
-        # import pdb; pdb.set_trace()
-        borders = get_country_borders(state_config)
-        ret.geometry = ret.geometry.intersection(borders)
+        def _open_geojson_or_nuts(label_or_geojson):
+            if label_or_geojson.endswith("json"):
+                return gpd.read_file(open(label_or_geojson), crs=EPSG_4326_WGS84).unary_union
+            return get_area(label_or_geojson).unary_union
 
-    ret = ret.set_crs(EPSG_4326_WGS84)
-    if not save:
-        ret.geometry = ret.geometry.affine_transform([scale[0], 0, 0, scale[1], translate[0], translate[1]])
-    assert ret.crs == EPSG_4326_WGS84
-    return ret
+        geo_config = self._state.get("country-borders")
+        geo_config = geo_config if isinstance(geo_config, list) else [geo_config]
 
-def get_country_borders(state_config):
-    """Evaluate the country borders from the state config.
-        It is computed as the union of all the identifiers containes int the country-borders key.
-    """
-
-    def _open_geojson_or_nuts(label_or_geojson):
-        if label_or_geojson.endswith("json"):
-            return gpd.read_file(open(label_or_geojson), crs=EPSG_4326_WGS84).unary_union
-        return get_area(label_or_geojson).unary_union
-
-    geo_config = state_config.get("country-borders")
-    geo_config = geo_config if isinstance(geo_config, list) else [geo_config]
-
-    borders = None
-    for g in  geo_config:
-        new_borders = _open_geojson_or_nuts(g)
-        borders = new_borders if borders is None else borders.union(new_borders)
-    return borders
+        borders = None
+        for g in  geo_config:
+            new_borders = _open_geojson_or_nuts(g)
+            borders = new_borders if borders is None else borders.union(new_borders)
+        return borders
 
 
-def intersect(df1: GeoDataFrame, df2: GeoDataFrame) -> GeoDataFrame:
-    assert df1.crs == df2.crs
-    return gpd.overlay(df1, df2, how="intersection")
 
 
 #
@@ -267,6 +250,7 @@ from multiprocessing import Manager
 
 manager = Manager()
 state_archive = manager.dict()
+from .utils import intersect
 
 
 def render(
@@ -288,9 +272,11 @@ def render(
 
     state_label = gdfm.state.values[0]
     state_label_font_size = 48
+    config = Config()
+
     # FIXME: there's a problem somewhere with the German empire.
     if state_label != "Deutschland":
-        empire = intersect(empire, _get_europe())
+        empire = intersect(empire, config.get_europe())
 
     state_archive[state_label] = empire
     if plot_state_labels_only:
@@ -411,9 +397,8 @@ def test_addmap(ax):
     add_basemap(ax)
 
 
-def render_links(ax):
+def render_links(ax, links_):
     # import pdb; pdb.set_trace()
-    links_ = links()
     for link in links_:
         src, dst = link
         # src = find_region(src)
@@ -462,8 +447,8 @@ def render_board(countries=COUNTRIES, background=False, plot_cities=True, render
     countries = countries or COUNTRIES
     get_state_archive()
     if render_links:
-        render_links(ax=full_board)
-        render_links(ax=links_board)
+        render_links(ax=full_board, links_=Config().links)
+        render_links(ax=links_board, links_=Config().links)
 
     with Pool(processes=20) as pool:
         #    pool.map(partial(render_state, ax=risk_board, plot_geo=True, plot_labels=False, plot_cities=False, plot_state_labels=False), countries)
@@ -523,20 +508,6 @@ def get_board():
     fig.set_dpi(300)
     board.set_axis_off()
     return fig, board
-
-
-def test_unite_maps():
-    fig, ax = get_board()
-    mask = gpd.read_file(open("germany-1914-boundaries.geojson")).set_crs(
-        EPSG_4326_WGS84
-    )
-    de = get_area("PL")
-    de = de.append(get_area("DE"))
-    # de.geometry = de.geometry.intersection(mask.geometry)
-    de = intersect(de, mask)
-    de.plot(ax=ax)
-    print(de)
-    fig.savefig("/tmp/test-intersect.png")
 
 
 def borderize(df, x):
