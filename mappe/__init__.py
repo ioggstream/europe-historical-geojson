@@ -1,5 +1,7 @@
+import json
 import logging
 from functools import partial
+from io import StringIO
 from multiprocessing.pool import ThreadPool as Pool
 from pathlib import Path
 from typing import List
@@ -9,25 +11,15 @@ import geopandas as gpd
 import matplotlib
 import matplotlib.pyplot as plt
 import requests_cache
-from contextily import add_basemap
+import yaml
 from geopandas import GeoDataFrame, GeoSeries
 from matplotlib import pyplot as plt
 from pandas import DataFrame
-from requests import get
 from shapely.geometry import MultiPolygon, Polygon, shape
 from shapely.ops import cascaded_union
 
 from .constants import *
-from .utils import (
-    Config,
-    annotate_coords,
-    baricenter,
-    geoline,
-    get_polygons,
-    log,
-    maps,
-    seas,
-)
+from .utils import *
 
 FONT_REGION = "eufm10"
 FONT_ARIAL = "DejaVu Sans"
@@ -39,10 +31,32 @@ matplotlib.rcParams["pdf.fonttype"] = 42
 log = logging.getLogger(__name__)
 requests_cache.install_cache("demo_cache")
 
+seas = NotImplementedError
+render_state = NotImplementedError
 
-COUNTRIES = tuple(maps().keys())
+class Config:
+    def __init__(self, filename: str = "mappe.yaml"):
+        self.config = lambda : yaml.safe_load(Path(filename).read_text())
+        self.filename = filename
+        self.suffix = Path(filename).stem
 
+    @property
+    def maps(self):
+        return self.config()["maps"]
+    @property
+    def seas(self):
+        return self.config()["seas"]
+    @property
+    def links(self):
+        return self.config()["links"]
+    def cache_filename(self, state: str):
+        return f"tmp-{self.suffix}-{state}.geojson"
 
+    def get_europe(self) -> GeoDataFrame:
+        europe = self.config()["europe_borders"]
+        eu_area = gpd.read_file(StringIO(json.dumps(europe)))
+        eu_area = eu_area.set_crs(EPSG_4326_WGS84)
+        return eu_area
 
 
 def prepare_neighbor_net(gdf: GeoDataFrame, nbr: dict):
@@ -61,6 +75,11 @@ def prepare_neighbor_net(gdf: GeoDataFrame, nbr: dict):
         print(index, neighbors)
         nbr[index]["nbr"] = neighbors
         nbr[index]["count"] = len(neighbors)
+
+
+
+config = Config()
+COUNTRIES = tuple(config.maps.keys())
 
 
 def plot_net(nbr, ax):
@@ -123,60 +142,28 @@ def togli_isolette(area, base=1):
     return area
 
 
-def get_polygons(label, retry=0):
-    """
-    Si collega ad internet e scarica i poligoni associati alla label.
-    """
-    coord_type = 4326
-    osm_fr = "http://polygons.openstreetmap.fr"
-    osm_tw = "https://api06.dev.openstreetmap.org"
-    base = "https://gisco-services.ec.europa.eu/distribution/v2"
-    log.info("Retrieving %r", label)
-
-    if str(label).isdigit():
-        u = f"{osm_fr}/get_geojson.py?id={label}&params=0"
-        # u=f"https://nominatim.openstreetmap.org/details.php?osmtype=R&osmid={label}&class=boundary&format=json"
-        if retry:
-            # If the entry is not in the geojson remote cache, trigger a regeneration
-            #  pinging poligons.
-            requests_cache.core.get_cache().delete_url(u)
-            get(f"http://polygons.openstreetmap.fr/?id={label}")
-        res = get(u)  # , proxies={"http": "socks5://localhost:11111"})
-        log.info("Request from cache: %r %r", u, res.from_cache)
-        if res.content:
-            return res.content.decode()
-        return "{}"
-    if label.startswith("http"):
-        return get(label).content.decode()
-
-    if label.startswith("file://"):
-        return Path(label[7:]).read_text()
-
-    for db, year in (("nuts", 2021), ("countries", 2020)):
-        ret = get(
-            f"{base}/{db}/distribution/{label}-region-10m-{coord_type}-{year}.geojson"
-        )
-        if ret.status_code == 200:
-            break
-        print(f"cannot find {ret.url}")
-    return ret.content.decode()
-
-
-
-
-
 class State:
     def __init__(self, state_name, config):
         self.name = state_name
         self.config = config
         self._state = config.maps[state_name]
-
+        self._gdf = None
 
     def get_regions(self) -> dict:
         """@returns: a dict containing all the regions' geometries.
         """
         regions = self._state["regions"]
         return {k: join_areas(v["codes"]) for k, v in regions.items()}
+
+    @property
+    def gdf(self):
+        if self._gdf is None:
+            self._gdf = self.get_state()
+            # FIXME: there's a problem somewhere with the German empire.
+            if self.name != "Deutschland":
+                self._gdf = intersect(self._gdf, config.get_europe())
+
+        return self._gdf
 
     def get_state(self, cache=True, save=False) -> GeoDataFrame:
         """:return a WGS84 geodataframe eventually intersected with the rest"""
@@ -185,7 +172,7 @@ class State:
         scale = state_config.get("scale", [1.0, 1.0])
 
         f = self.name.replace("\n", " ")
-        cache_file = Path(self.config.get_cache_filename(f))
+        cache_file = Path(self.config.cache_filename(f))
         if cache and cache_file.exists():
             log.warning(f"Reading from {cache_file}")
             ret = gpd.read_file(cache_file.open())
@@ -240,8 +227,154 @@ class State:
             borders = new_borders if borders is None else borders.union(new_borders)
         return borders
 
+    @property
+    def cities(self):
+        return self._state.get("citta", [])
+
+    def annotate_region(self,
+        region,
+        text=None,
+        xytext=None,
+        fontname=FONT_REGION,
+        color=FONT_REGION_COLOR,
+        ax=plt,
+    ):
+        region_name = region.name.values[0]
+        point = baricenter(region)
+        region_config = self._state["regions"][region_name]
+        region_label = region_config.get("label", region_name)
+        region_label_options = region_config.get("label_options", {})
+        rotation = region_label_options.get("rotation", 0)
+        horizontalalignment = region_label_options.get("ha", "center")
+        fontsize = 20
+        padding = [region_label_options.get("x", 0), region_label_options.get("y", 0)]
+        annotate_coords(
+            ax=ax,
+            text=text or region_label,
+            xy=point,
+            xytext=(i * fontsize for i in padding) if xytext is None else xytext,
+            horizontalalignment=horizontalalignment,
+            verticalalignment="center",
+            fontsize=fontsize,
+            color=color,
+            fontname=fontname,
+            # fontname="URW Bookman", color="black", fontsize=16,
+            # fontstyle="italic",
+            rotation=rotation,
+            textcoords="offset points",
+        )
+
+    def state_center(self, my_crs=MY_CRS):
+        return baricenter(self.gdf.to_crs(my_crs))
+
+    def render(self,
+        ax, plot_labels=True, plot_geo=True, plot_cities=True, **kwargs
+    ):
+        color_config = self._state["config"]
+        self._render(
+            ax=ax,
+            plot_labels=plot_labels,
+            plot_geo=plot_geo,
+            plot_cities=plot_cities,
+            **color_config,
+            **kwargs,
+        )
+        return self.gdf
+
+    def _render(
+        self,
+        ax=None,
+        facecolor1="blue",
+        facecolor2="blue",
+        plot_labels=True,
+        plot_geo=True,
+        plot_cities=True,
+        plot_state_labels=True,
+        plot_state_labels_only=False,
+    ):
+        global state_archive
+        my_crs = MY_CRS
+        empire = self.gdf
+        state_label = self.name
+        state_label_font_size = 48
 
 
+        state_archive[state_label] = empire
+        if plot_state_labels_only:
+            plot_cities = False
+            plot_labels = False
+
+        ax.annotate(
+            text=state_label,
+            xy=self.state_center(),
+            fontsize=state_label_font_size,
+            horizontalalignment="center",
+            verticalalignment="center",
+            color="white",
+            fontname=FONT_REGION,
+            alpha=0.7 if plot_state_labels else 0,
+        )
+
+        for region_name in empire.name:
+            region = empire[empire.name == region_name]
+            togli_isolette(region, 0.3)
+            empire[empire.name == region_name] = region
+
+            if plot_labels:
+                try:
+                    self.annotate_region(region, ax=ax)
+                except:
+                    raise
+
+        if plot_cities:
+            for city in self.cities:
+                self.annotate_location(**city, ax=ax)
+
+        # Limit the map to EU and convert to 3857 to improve printing.
+        empire = empire.to_crs(my_crs)
+
+        # Draw borders with different colors.
+        if plot_geo:
+            empire.plot(
+                ax=ax, edgecolor="black", facecolor=facecolor2, linewidth=2, alpha=1.0
+            )
+            empire.plot(
+                ax=ax, edgecolor="black", facecolor=facecolor1, linewidth=0, alpha=0.5
+            )
+        else:
+            empire.plot(ax=ax, edgecolor="black", facecolor="none", linewidth=0, alpha=0)
+
+        return empire
+
+    def annotate_location(
+        self,
+        address,
+        text=LARGE_CITY,
+        fontsize=24,
+        fontname="DejaVu Serif",
+        ax=plt,
+        **kwargs,
+    ):
+
+        coords = geolocate(address)
+        if not coords:
+            log.error(f"Cannot find location: {address}, skipping")
+            return None
+
+        self.annotate_coords(
+            coords,
+            text=text,
+            fontsize=fontsize,
+            fontname=fontname,
+            ax=ax,
+            **kwargs,
+        )
+
+    def annotate_coords(self, coords, text, **kwargs):
+        tx, ty = self._state.get("translate", [0, 0])
+        a11, a22 = self._state.get("scale", [1, 1])
+
+        annotate_coords(xy=coords, text=text, translate=(tx,ty), scale=(a11,a22), **kwargs)
 
 #
 # Render maps.
@@ -250,152 +383,18 @@ from multiprocessing import Manager
 
 manager = Manager()
 state_archive = manager.dict()
-from .utils import intersect
 
 
-def render(
-    gdfm,
-    facecolor1="blue",
-    facecolor2="blue",
-    ax=None,
-    plot_labels=True,
-    plot_geo=True,
-    plot_cities=True,
-    plot_state_labels=True,
-    plot_state_labels_only=False,
-    cities=None,
-):
-    global state_archive
-    cities = cities or []
-    empire = gdfm
-    my_crs = MY_CRS
-
-    state_label = gdfm.state.values[0]
-    state_label_font_size = 48
-    config = Config()
-
-    # FIXME: there's a problem somewhere with the German empire.
-    if state_label != "Deutschland":
-        empire = intersect(empire, config.get_europe())
-
-    state_archive[state_label] = empire
-    if plot_state_labels_only:
-        plot_cities = False
-        plot_labels = False
-
-    state_center = baricenter(empire.to_crs(my_crs))
-    ax.annotate(
-        text=state_label,
-        xy=state_center,
-        fontsize=state_label_font_size,
-        horizontalalignment="center",
-        verticalalignment="center",
-        color="white",
-        fontname=FONT_REGION,
-        alpha=0.7 if plot_state_labels else 0,
-    )
-
-    for region_name in empire.name:
-        region = empire[empire.name == region_name]
-        togli_isolette(region, 0.3)
-        empire[empire.name == region_name] = region
-
-        if plot_labels:
-            try:
-                annotate_region(region, ax=ax)
-            except:
-                raise
-
-    if plot_cities:
-        for city in cities:
-            annotate_location(**city, state_label=state_label, ax=ax)
-
-    # Limit the map to EU and convert to 3857 to improve printing.
-    # empire = gpd.overlay(empire, _get_europe(), how='intersection')
-    empire = empire.to_crs(my_crs)
-
-    # Draw borders with different colors.
-    if plot_geo:
-        empire.plot(
-            ax=ax, edgecolor="black", facecolor=facecolor2, linewidth=2, alpha=1.0
-        )
-        empire.plot(
-            ax=ax, edgecolor="black", facecolor=facecolor1, linewidth=0, alpha=0.5
-        )
-    else:
-        empire.plot(ax=ax, edgecolor="black", facecolor="none", linewidth=0, alpha=0)
-
-    return empire
 
 
-def annotate_region(
-    region,
-    text=None,
-    xytext=None,
-    fontname=FONT_REGION,
-    color=FONT_REGION_COLOR,
-    ax=plt,
-):
-    state_label = region.state.values[0]
-    region_name = region.name.values[0]
-    point = baricenter(region)
-    region_config = maps()[state_label]["regions"][region_name]
-    region_label = region_config.get("label", region_name)
-    region_label_options = region_config.get("label_options", {})
-    rotation = region_label_options.get("rotation", 0)
-    horizontalalignment = region_label_options.get("ha", "center")
-    fontsize = 20
-    padding = [region_label_options.get("x", 0), region_label_options.get("y", 0)]
-    annotate_coords(
-        ax=ax,
-        text=text or region_label,
-        xy=point,
-        xytext=(i * fontsize for i in padding) if xytext is None else xytext,
-        horizontalalignment=horizontalalignment,
-        verticalalignment="center",
-        fontsize=fontsize,
-        color=color,
-        fontname=fontname,
-        # fontname="URW Bookman", color="black", fontsize=16,
-        # fontstyle="italic",
-        state_label=None,
-        rotation=rotation,
-        textcoords="offset points",
-    )
+annotate_region = NotImplementedError
 
-
-def render_state(
-    state_label, ax, plot_labels=True, plot_geo=True, plot_cities=True, **kwargs
-):
-    state_area = get_state(state_label)
-    state_config = maps()[state_label]
-    color_config = state_config["config"]
-    cities = state_config.get("citta", [])
-    render(
-        state_area,
-        ax=ax,
-        plot_labels=plot_labels,
-        plot_geo=plot_geo,
-        plot_cities=plot_cities,
-        cities=cities,
-        **color_config,
-        **kwargs,
-    )
-    return state_area
-
+from .utils import geoline, geolocate
 
 
 def render_seas(ax=None):
     for s in seas():
         annotate_coords(ax=ax, **s)
-
-
-def test_addmap(ax):
-    fig, ax = plt.subplots(1, 1)
-    fig.set_size_inches(20, 20)
-    render_state("Ottomano", ax=ax)
-    add_basemap(ax)
-
 
 def render_links(ax, links_):
     # import pdb; pdb.set_trace()
@@ -440,7 +439,7 @@ def render_board(countries=COUNTRIES, background=False, plot_cities=True, render
     fig_full, full_board = get_board()
     fig_links, links_board = get_board()
     if background:
-        eu = _get_europe().to_crs(MY_CRS)
+        eu = config.get_europe().to_crs(MY_CRS)
         eu.plot(ax=full_board, facecolor="lightblue")
         eu.plot(ax=risk_board, facecolor="lightblue")
 
@@ -479,6 +478,10 @@ def render_board(countries=COUNTRIES, background=False, plot_cities=True, render
 #    fig_label.savefig(f"/tmp/label-board-{suffix}.png", **cfg)
 #    fig_links.savefig(f"/tmp/links-board-{suffix}.png", **cfg)
 
+def get_state(*args, **kwargs):
+    raise NotImplementedError
+def get_suffix():
+    raise NotImplementedError
 
 def add_neighbour_net(ax):
     log.warning("Rendering net.")
@@ -486,7 +489,7 @@ def add_neighbour_net(ax):
     df = get_state(COUNTRIES[0])
     for x in COUNTRIES[1:]:
         df = df.append(get_state(x))
-    df = df.intersects(_get_europe())
+    df = df.intersects(config.get_europe())
     prepare_neighbor_net(df, nbr)
     plot_net(nbr, ax)
     df.plot(ax=ax, color='blue')

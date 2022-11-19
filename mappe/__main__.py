@@ -1,6 +1,6 @@
 import click
 
-from . import render_board, test_render_background_masked_ok
+from . import render_board
 
 
 @click.command()

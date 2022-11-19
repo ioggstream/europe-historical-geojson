@@ -1,8 +1,6 @@
-import json
 import logging
 import os
 from functools import lru_cache
-from io import StringIO
 from pathlib import Path
 from typing import List
 
@@ -10,13 +8,11 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
 import requests_cache
-import yaml
 from geopandas import GeoDataFrame, GeoSeries
 from matplotlib import pyplot as plt
 from requests import get
 from shapely.geometry import MultiPolygon, Point, shape
 from shapely.ops import cascaded_union
-from StringIO import StringIO
 
 from .constants import EPSG_4326_WGS84, MY_CRS
 
@@ -24,30 +20,6 @@ log = logging.getLogger(__name__)
 
 LARGE_CITY = "\u2299"  # "◉"
 
-
-class Config:
-    def __init__(self, filename: str = "mappe.yaml"):
-        self.config = lambda : yaml.safe_load(Path(filename).read_text())
-        self.filename = filename
-        self.suffix = Path(filename).stem
-
-    @property
-    def maps(self):
-        return self.config()["maps"]
-    @property
-    def seas(self):
-        return self.config()["seas"]
-    @property
-    def links(self):
-        return self.config()["links"]
-    def cache_filename(self, state: str):
-        return f"tmp-{self.suffix}-{state}.geojson"
-
-    def get_europe(self) -> GeoDataFrame:
-        europe = self.config()["europe_borders"]
-        eu_area = gpd.read_file(StringIO(json.dumps(europe)))
-        eu_area = eu_area.set_crs(EPSG_4326_WGS84)
-        return eu_area
 
 def get_axis():
     fig, ax = plt.subplots(1, 1)
@@ -146,6 +118,7 @@ def get_polygons(label, retry=0):
     """
     Si collega ad internet e scarica i poligoni associati alla label.
     """
+
     coord_type = 4326
     osm_fr = "http://polygons.openstreetmap.fr"
     osm_tw = "https://api06.dev.openstreetmap.org"
@@ -185,36 +158,6 @@ def get_polygons(label, retry=0):
 
 
 
-def annotate_location(
-    address,
-    text=LARGE_CITY,
-    state_label=None,
-    fontsize=24,
-    fontname="DejaVu Serif",
-    ax=plt,
-    **kwargs,
-):
-
-    coords = geolocate(address)
-    if not coords:
-        log.error(f"Cannot find location: {address}, skipping")
-        return None
-
-    state_annotate_coords(
-        coords,
-        text=text,
-        state_label=state_label,
-        fontsize=fontsize,
-        fontname=fontname,
-        ax=ax,
-        **kwargs,
-    )
-
-def state_annotate_coords(self, **kwargs):
-    tx, ty = self._state.get("translate", [0, 0])
-    a11, a22 = self._state.get("scale", [1, 1])
-
-    annotate_coords(translate=(tx,ty), scale=(a11,a22), **kwargs)
 
 def annotate_coords(xy, text, translate=(0,0), scale=(1,1), ax=plt, padding=(0, 0), **kwargs):
     log.warning(f"annotate {text} @{xy}")
@@ -237,8 +180,8 @@ def annotate_coords(xy, text, translate=(0,0), scale=(1,1), ax=plt, padding=(0, 
 
 
 def geolocate(address):
-    import requests_cache
     from geopy.geocoders import MapQuest
+
     requests_cache.install_cache("geopy_cache")
     log.warning(f"geolocate {address}")
     try:
