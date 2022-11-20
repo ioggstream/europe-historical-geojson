@@ -161,9 +161,19 @@ class State:
             self._gdf = self.get_state()
             # FIXME: there's a problem somewhere with the German empire.
             if self.name != "Deutschland":
-                self._gdf = intersect(self._gdf, config.get_europe())
+                self._gdf = intersect(self._gdf, self.config.get_europe())
 
         return self._gdf
+
+    def save(self):
+        df = self.get_state(cache=False, save=True)
+        soglia_isolette = 0.2
+        try:
+            togli_isolette(df, soglia_isolette)
+        except:
+            pass
+        fpath = self.config.cache_filename(self.name)
+        df.to_file(fpath, driver="GeoJSON")
 
     def get_state(self, cache=True, save=False) -> GeoDataFrame:
         """:return a WGS84 geodataframe eventually intersected with the rest"""
@@ -218,7 +228,7 @@ class State:
                 return gpd.read_file(open(label_or_geojson), crs=EPSG_4326_WGS84).unary_union
             return get_area(label_or_geojson).unary_union
 
-        geo_config = self._state.get("country-borders")
+        geo_config = self._state.get("country-borders", [])
         geo_config = geo_config if isinstance(geo_config, list) else [geo_config]
 
         borders = None
@@ -355,26 +365,21 @@ class State:
         ax=plt,
         **kwargs,
     ):
-
+        if text == "●":
+            return None
         coords = geolocate(address)
         if not coords:
             log.error(f"Cannot find location: {address}, skipping")
             return None
 
-        self.annotate_coords(
-            coords,
-            text=text,
-            fontsize=fontsize,
-            fontname=fontname,
-            ax=ax,
-            **kwargs,
-        )
-
-    def annotate_coords(self, coords, text, **kwargs):
+        log.warning(f"Annotating {address} with {text}, kwargs: {kwargs}")
         tx, ty = self._state.get("translate", [0, 0])
         a11, a22 = self._state.get("scale", [1, 1])
+        log.warning(f"Annotating {text} at {coords} with translate {tx}, {ty} and scale {a11}, {a22}")
+        annotate_coords(xy=coords, text=text, translate=(tx,ty), scale=(a11,a22), fontname=fontname,
+        fontsize=fontsize,ax=ax, **kwargs)
 
-        annotate_coords(xy=coords, text=text, translate=(tx,ty), scale=(a11,a22), **kwargs)
+
 
 #
 # Render maps.
@@ -383,13 +388,6 @@ from multiprocessing import Manager
 
 manager = Manager()
 state_archive = manager.dict()
-
-
-
-
-annotate_region = NotImplementedError
-
-from .utils import geoline, geolocate
 
 
 def render_seas(ax=None):
@@ -424,36 +422,38 @@ def get_state_archive():
     global state_archive
     if len(state_archive):
         return state_archive
-
+    config = Config()
     for c in COUNTRIES:
-        state_ = get_state(c)
+        state_ = State(c, config=config)
         state_archive.update({
             k: state_[state_.name==k] for k in state_.name.values
         })
     return state_archive
 
 
-def render_board(countries=COUNTRIES, background=False, plot_cities=True, render_net=True, render_links=False, **kwargs):
+def render_board(countries=COUNTRIES, background=False, plot_cities=True, render_net=True, render_links=False, config=None, **kwargs):
     fig_risk, risk_board = get_board()
     fig_label, label_board = get_board()
     fig_full, full_board = get_board()
     fig_links, links_board = get_board()
+    config = config or Config()
     if background:
         eu = config.get_europe().to_crs(MY_CRS)
         eu.plot(ax=full_board, facecolor="lightblue")
         eu.plot(ax=risk_board, facecolor="lightblue")
 
     countries = countries or COUNTRIES
-    get_state_archive()
+    # get_state_archive()
     if render_links:
         render_links(ax=full_board, links_=Config().links)
         render_links(ax=links_board, links_=Config().links)
 
+    config = Config()
     with Pool(processes=20) as pool:
         #    pool.map(partial(render_state, ax=risk_board, plot_geo=True, plot_labels=False, plot_cities=False, plot_state_labels=False), countries)
         pool.map(
             partial(
-                render_state,
+                lambda state, **kwargs: State(state, config=config).render(**kwargs),
                 ax=full_board,
                 plot_geo=True,
                 plot_labels=True,
@@ -471,7 +471,7 @@ def render_board(countries=COUNTRIES, background=False, plot_cities=True, render
         add_neighbour_net(risk_board)
 
     # add_basemap(full_board, crs=str(MY_CRS), )
-    suffix = get_suffix()
+    suffix = config.suffix
     cfg = dict(dpi=92, bbox_inches="tight", transparent=True)
     fig_full.savefig(f"/tmp/full-board-{suffix}.png", **cfg)
     fig_risk.savefig(f"/tmp/risk-board-{suffix}.png", **cfg)
@@ -479,8 +479,6 @@ def render_board(countries=COUNTRIES, background=False, plot_cities=True, render
 #    fig_links.savefig(f"/tmp/links-board-{suffix}.png", **cfg)
 
 def get_state(*args, **kwargs):
-    raise NotImplementedError
-def get_suffix():
     raise NotImplementedError
 
 def add_neighbour_net(ax):
@@ -560,3 +558,7 @@ def find_region(region_name):
         if not region.empty:
             return region
     return None
+
+def save_states(config):
+    for c in COUNTRIES:
+        f = c.replace("\n", " ")

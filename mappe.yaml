@@ -275,12 +275,6 @@ maps:
         <<: *small_city
       - address: Anversa, Belgium
         <<: *small_city
-      - address: Barcelona, Spain
-        <<: *small_city
-      - address: Lisboa, Portugal
-        <<: *small_city
-      - address: Madrid, Spain
-        <<: *small_city
       - address: Oslo, Norway
         <<: *small_city
       - address: Bergen, Norway
@@ -290,6 +284,47 @@ maps:
       - address: Goteborg, Sweden
         <<: *small_city
       - address: Copenhagen, Denmark
+        <<: *small_city
+    regions:
+      Svizzera:
+        codes:
+        - CH
+        - LI
+      Benelux:
+        label: "Netherland\n& Belgium"
+        label_options:
+          rotation: 80
+        codes:
+        - BE
+        - NL
+  Scandinanvia:
+    config:
+      facecolor1: orange
+      facecolor2: orange
+    regions:
+      Denmark:
+        codes:
+        - "DK"
+      Sverige:
+        label: "Sverige\n(Svezia)"
+        codes:
+        - "SE"
+      Norway:
+        label: "Norge\n(Norvegia)"
+        label_options:
+          x: -2
+        codes:
+        - "NO"
+  Iberica:
+    config:
+      facecolor1: orange
+      facecolor2: orange
+    citta:
+      - address: Barcelona, Spain
+        <<: *small_city
+      - address: Lisboa, Portugal
+        <<: *small_city
+      - address: Madrid, Spain
         <<: *small_city
       - address: Coimbra, Portugal
         <<: *small_city
@@ -315,11 +350,8 @@ maps:
         <<: *small_city
       - address: Pamplona, Espana
         <<: *small_city
+
     regions:
-      Svizzera:
-        codes:
-        - CH
-        - LI
       Portugal:
         label_options:
           rotation: 90
@@ -342,26 +374,6 @@ maps:
         - ES4
         - ES6
 #        - MA
-      Denmark:
-        codes:
-        - "DK"
-      Sverige:
-        label: "Sverige\n(Svezia)"
-        codes:
-        - "SE"
-      Norway:
-        label: "Norge\n(Norvegia)"
-        label_options:
-          x: -2
-        codes:
-        - "NO"
-      Benelux:
-        label: "Netherland\n& Belgium"
-        label_options:
-          rotation: 80
-        codes:
-        - BE
-        - NL
 
   "Prussia":
     citta:
@@ -490,25 +502,6 @@ maps:
       - address: Brno, CZ
         <<: *small_city
 
-    regioni:
-      Ungheria:
-        codes:
-        - HU
-        - RO1
-        - RO42
-        - SK
-        - 72489 # Trans-carpazia UA
-        - RS12
-      Galizia:
-        codes:
-        - PL21
-        - PL225
-        - 130957 # Pre-carpazia PL
-        - 72380 # Leopoli
-        - 72488 # Ivano-Frankivsk
-        - 72525 # Ternopil
-        - 72526 # Chernivitsi UA
-
     regions:
       Austria:
         label_options:
@@ -547,17 +540,34 @@ maps:
         codes:
         - CZ
       Galizia:
+        x-build-codes:
+        - PL21
+        - PL225
+        - 130957 # Pre-carpazia PL
+        - 72380 # Leopoli
+        - 72488 # Ivano-Frankivsk
+        - 72525 # Ternopil
+        - 72526 # Chernivitsi UA
+
         codes:
         - file://data/geojson/map-Galizia.geojson
         - RO215
       Ungheria:
+        label: "Magyarország\n(Ungheria)"
         codes:
         - file://data/geojson/map-Ungheria.geojson
       "Venezia":
         label: "Lombardo\nVeneto"
         label_options:
-          x: 0  # -2
+          x: 1.5  # -2
           y: -1.2
+        x-build-codes:
+        - HU
+        - RO1
+        - RO42
+        - SK
+        - 72489 # Trans-carpazia UA
+        - RS12
         codes:
         - ITH41
         - ITH42

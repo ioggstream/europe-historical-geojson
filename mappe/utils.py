@@ -154,13 +154,7 @@ def get_polygons(label, retry=0):
     return ret.content.decode()
 
 
-
-
-
-
-
 def annotate_coords(xy, text, translate=(0,0), scale=(1,1), ax=plt, padding=(0, 0), **kwargs):
-    log.warning(f"annotate {text} @{xy}")
     tx, ty = translate
     a11, a22 = scale
     xy = GeoSeries(Point(xy[0], xy[1])).affine_transform([a11, 0, 0, a22, tx, ty]).geometry[0].coords[:][0]
@@ -172,10 +166,10 @@ def annotate_coords(xy, text, translate=(0,0), scale=(1,1), ax=plt, padding=(0, 
         kwargs["textcoords"] = "offset points"
 
     coords = np.array(xy)
-    coords += np.array(translate)
-    map_coords = point_coords(*coords)
+    # coords += np.array(translate)
+    map_coords = point_to_map_coordinates(*coords)
     # Annotate the given point with centered alignment.
-    log.warning(f"annotate {text} @{map_coords}, {kwargs}")
+    log.debug(f"annotating {text} @{xy}, {translate}, {scale}")
     ax.annotate(text=text, xy=map_coords, ha="center", va="center", **kwargs)
 
 
@@ -200,7 +194,10 @@ def test_city_location_sea():
     raise NotImplementedError
 
 
-def point_coords(x=24, y=41, crs=EPSG_4326_WGS84):
+def point_to_map_coordinates(x=24, y=41, crs=EPSG_4326_WGS84) -> List:
+    """
+    Convert a point in the given CRS to the map CRS.
+    """
     x = Point(x, y)
     points = gpd.GeoDataFrame({"geometry": [x]}, crs=crs).set_crs(crs).to_crs(MY_CRS)
     return [x for x in points.geometry[0].coords[:][0]]
@@ -208,7 +205,7 @@ def point_coords(x=24, y=41, crs=EPSG_4326_WGS84):
 
 def geolocate_as_dataframe(address) -> List[GeoDataFrame]:
     coords = geolocate(address)
-    return point_coords(*coords)
+    return point_to_map_coordinates(*coords)
 
 
 def cm2inch(*tupl):

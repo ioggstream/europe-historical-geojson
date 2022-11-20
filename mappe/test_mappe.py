@@ -20,7 +20,7 @@ from . import (
     prepare_neighbor_net,
     togli_isolette,
 )
-from .utils import Config, annotate_coords, get_cache_filename
+from .utils import Config, annotate_coords
 
 
 def test_render_background_masked_ok():
@@ -66,18 +66,6 @@ def test_render_background_ok():
     add_basemap(ax, crs=str(MY_CRS), source=ctx.providers.Esri.WorldPhysical)
     fig.savefig("/tmp/terrain-board.png", dpi=300, transparent=True)
 
-
-def test_save_states():
-    for c in COUNTRIES:
-        f = c.replace("\n", " ")
-        df = get_state(c, cache=False, save=True)
-        soglia_isolette = 0.2
-        try:
-            togli_isolette(df, soglia_isolette)
-        except:
-            pass
-        fpath = get_cache_filename(c)
-        df.to_file(fpath, driver="GeoJSON")
 
 def test_generate_net():
     fig, ax = get_board()
