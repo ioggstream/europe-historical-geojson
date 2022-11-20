@@ -26,6 +26,11 @@ FONT_ARIAL = "DejaVu Sans"
 
 FONT_REGION = "Liberation Sans"
 FONT_REGION_COLOR = "black"
+ZORDER_BG = 0
+ZORDER_REGION_FC1 = 200
+ZORDER_REGION_FC2 = 100
+ZORDER_REGION_FC0 = 100
+ZORDER_LINKS = 50
 matplotlib.rcParams["pdf.fonttype"] = 42
 
 log = logging.getLogger(__name__)
@@ -346,13 +351,13 @@ class State:
         # Draw borders with different colors.
         if plot_geo:
             empire.plot(
-                ax=ax, edgecolor="black", facecolor=facecolor2, linewidth=2, alpha=1.0
+                ax=ax, edgecolor="black", facecolor=facecolor2, linewidth=2, alpha=1.0, zorder=ZORDER_REGION_FC2
             )
             empire.plot(
-                ax=ax, edgecolor="black", facecolor=facecolor1, linewidth=0, alpha=0.5
+                ax=ax, edgecolor="black", facecolor=facecolor1, linewidth=0, alpha=0.5, zorder=ZORDER_REGION_FC1
             )
         else:
-            empire.plot(ax=ax, edgecolor="black", facecolor="none", linewidth=0, alpha=0)
+            empire.plot(ax=ax, edgecolor="black", facecolor="none", linewidth=0, alpha=0, zorder=ZORDER_REGION_FC0)
 
         return empire
 
@@ -389,72 +394,69 @@ from multiprocessing import Manager
 manager = Manager()
 state_archive = manager.dict()
 
+class Board:
+    def __init__(self, name, config, background=False, ax=None) -> None:
+        self.config = config
+        self.name = name
+        if ax is None:
+            self.fig, self.ax = get_board()
+        if background:
+            eu = config.get_europe().to_crs(MY_CRS)
+            eu.plot(ax=self.ax, facecolor="lightblue", zorder=ZORDER_BG)
 
-def render_seas(ax=None):
-    for s in seas():
-        annotate_coords(ax=ax, **s)
+    def render_seas(self):
+        seas = self.config.seas
+        fontconfig = seas.get("config", {})
+        for s in seas.get("items", []):
+            x = dict(fontconfig, **s)
+            annotate_coords(ax=self.ax, **x)
 
-def render_links(ax, links_):
-    # import pdb; pdb.set_trace()
-    for link in links_:
-        src, dst = link
-        # src = find_region(src)
-        # dst = find_region(dst)
-        found_region = find_region(src)
-        if found_region is not None:
-            src = baricenter(found_region)
-        else:
-            src = tuple(geolocate(src))
+    def save(self):
+        cfg = dict(dpi=92, bbox_inches="tight", transparent=True)
+        self.fig.savefig(f"/tmp/{self.name}-board-{config.suffix}.png", **cfg)
 
-        found_region = find_region(dst)
-        if found_region is not None:
-            dst = baricenter(found_region)
-        else:
-            dst = tuple(geolocate(dst))
+    def render_links(self):
+        # import pdb; pdb.set_trace()
+        for link in self.config.links:
+            src, dst = link
+            # src = find_region(src)
+            # dst = find_region(dst)
+            found_region = find_region(src)
+            if found_region is not None:
+                src = baricenter(found_region)
+            else:
+                src = tuple(geolocate(src))
 
-        print("linea", src, dst)
-        if all(x is not None for x in (src, dst)):
-            line = geoline(src, dst)
-            line = line.set_crs(EPSG_4326_WGS84).to_crs(MY_CRS)
-            line.plot(ax=ax, color="black", linewidth=2, linestyle="dashed", zorder=1)
+            found_region = find_region(dst)
+            if found_region is not None:
+                dst = baricenter(found_region)
+            else:
+                dst = tuple(geolocate(dst))
 
-def get_state_archive():
-    global state_archive
-    if len(state_archive):
-        return state_archive
-    config = Config()
-    for c in COUNTRIES:
-        state_ = State(c, config=config)
-        state_archive.update({
-            k: state_[state_.name==k] for k in state_.name.values
-        })
-    return state_archive
+            print("linea", src, dst)
+            if all(x is not None for x in (src, dst)):
+                line = geoline(src, dst)
+                line = line.set_crs(EPSG_4326_WGS84).to_crs(MY_CRS)
+                line.plot(ax=self.ax, color="black", linewidth=2, linestyle="dashed", zorder=ZORDER_LINKS)
 
 
 def render_board(countries=COUNTRIES, background=False, plot_cities=True, render_net=True, render_links=False, config=None, **kwargs):
-    fig_risk, risk_board = get_board()
-    fig_label, label_board = get_board()
-    fig_full, full_board = get_board()
-    fig_links, links_board = get_board()
+    countries = countries or COUNTRIES
     config = config or Config()
+
+    fig_risk, risk_board = get_board()
+    full_board = Board("full", background=True, config=config)
+    label_board = Board("label", config=config)
+    links_board = Board("links", config=config)
     if background:
         eu = config.get_europe().to_crs(MY_CRS)
-        eu.plot(ax=full_board, facecolor="lightblue")
         eu.plot(ax=risk_board, facecolor="lightblue")
 
-    countries = countries or COUNTRIES
-    # get_state_archive()
-    if render_links:
-        render_links(ax=full_board, links_=Config().links)
-        render_links(ax=links_board, links_=Config().links)
-
-    config = Config()
     with Pool(processes=20) as pool:
-        #    pool.map(partial(render_state, ax=risk_board, plot_geo=True, plot_labels=False, plot_cities=False, plot_state_labels=False), countries)
         pool.map(
             partial(
                 lambda state, **kwargs: State(state, config=config).render(**kwargs),
-                ax=full_board,
+                ax=full_board.ax,
                 plot_geo=True,
                 plot_labels=True,
                 plot_cities=plot_cities,
@@ -465,28 +467,27 @@ def render_board(countries=COUNTRIES, background=False, plot_cities=True, render
         #    pool.map(partial(render_state, ax=label_board, plot_geo=False, plot_labels=True, plot_cities=True,  plot_state_labels=False), countries)
     #    pool.map(partial(render_state, ax=links_board, plot_geo=False, plot_labels=False, plot_cities=False, plot_state_labels=False), countries)
 
-#    render_seas(ax=full_board)
+    full_board.render_seas()
+    if render_links:
+        full_board.render_links()
+
+    label_board.render_links()
+    label_board.render_seas()
+    label_board.save()
 
     if render_net:
         add_neighbour_net(risk_board)
 
     # add_basemap(full_board, crs=str(MY_CRS), )
-    suffix = config.suffix
-    cfg = dict(dpi=92, bbox_inches="tight", transparent=True)
-    fig_full.savefig(f"/tmp/full-board-{suffix}.png", **cfg)
-    fig_risk.savefig(f"/tmp/risk-board-{suffix}.png", **cfg)
-#    fig_label.savefig(f"/tmp/label-board-{suffix}.png", **cfg)
-#    fig_links.savefig(f"/tmp/links-board-{suffix}.png", **cfg)
+    full_board.save()
 
-def get_state(*args, **kwargs):
-    raise NotImplementedError
 
-def add_neighbour_net(ax):
+def add_neighbour_net(ax, config=None):
     log.warning("Rendering net.")
     nbr = {}
-    df = get_state(COUNTRIES[0])
+    df = State(COUNTRIES[0], config=config).gdf
     for x in COUNTRIES[1:]:
-        df = df.append(get_state(x))
+        df = df.append(State(x, config=config).gdf)
     df = df.intersects(config.get_europe())
     prepare_neighbor_net(df, nbr)
     plot_net(nbr, ax)
@@ -544,11 +545,6 @@ def save_state(gdf: GeoDataFrame):
             log.warning(f"Region is empty {r}")
             continue
         region_df.to_file(f"tmp-{state_label}-{r}.geojson", driver="GeoJSON")
-
-
-def download_only():
-    for state_label in COUNTRIES:
-        get_regions(state_label)
 
 
 def find_region(region_name):

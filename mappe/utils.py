@@ -17,7 +17,7 @@ from shapely.ops import cascaded_union
 from .constants import EPSG_4326_WGS84, MY_CRS
 
 log = logging.getLogger(__name__)
-
+ZORDER_TEXT = 1000
 LARGE_CITY = "\u2299"  # "◉"
 
 
@@ -170,7 +170,7 @@ def annotate_coords(xy, text, translate=(0,0), scale=(1,1), ax=plt, padding=(0, 
     map_coords = point_to_map_coordinates(*coords)
     # Annotate the given point with centered alignment.
     log.debug(f"annotating {text} @{xy}, {translate}, {scale}")
-    ax.annotate(text=text, xy=map_coords, ha="center", va="center", **kwargs)
+    ax.annotate(text=text, xy=map_coords, ha="center", va="center", zorder=ZORDER_TEXT, **kwargs)
 
 
 def geolocate(address):

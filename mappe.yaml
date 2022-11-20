@@ -46,38 +46,49 @@ constants:
     text: "●"
 
 seas:
+  config:
+    fontstyle: italic
+    fontname: "DejaVu Sans"
+    fontsize: 24
+  items:
   - text: "Mare Adriatico"
     xy: [16.104211, 42.684288]
     rotation: -45
     padding: [0,0]
     fontsize: 24
-  - text: "Mar Mediterraneo" # Ionio
+  - text: "Mar Ionio" # Ionio
     xy: [18.188472, 37.762008]
     fontsize: 24
     padding: [1, -2]
+    rotation: 45
+  - text: "Αιγαίο Πέλαγος\nMar Egeo" # Egeo
+    xy: [25, 37.25]
+    fontsize: 24
+    #padding: [4, -2]
+    rotation: 60
   - text: Mar Mediterraneo
     xy: [11.4822, 39.1299]
     fontsize: 24
     rotation: -45
     padding: [1, 1]
-  - text: Mar Mediterraneo
+  - text: Mar Mediterráneo
     fontsize: 24
     xy: [4.3976, 41.2041]
     padding: [0, -1]
-  - text: "Oceano Atlantico"
+  - text: "Atlantic Ocean\nOceano Atlantico"
     fontsize: 24
     xy: [-4.4793, 45.2368]
-  - text: "Oceano Atlantico"
-    fontsize: 24
-    xy: [-10.4998, 40.4393]
-    rotation: 90
-  - text: "Mare del Nord"
+#  - text: "Oceano Atlantico"
+#    fontsize: 24
+#    xy: [-10.4998, 40.4393]
+#    rotation: 90
+  - text: "North Sea\n(Mare del Nord)"
     fontsize: 24
     xy: [2.94, 56.38]
   - text: Mar Baltico
     fontsize: 24
     xy: [19.82, 58.58]
-  - text: Mare Nero
+  - text: "Черно море\nMar Nero"
     fontsize: 24
     rotation: 0
     xy: [29.964787, 42.431873]
@@ -266,6 +277,17 @@ maps:
           y: -2
         codes:
         - file://data/geojson/poland-1914.geojson
+  Africa:
+    config:
+      facecolor1: '#f9f9f9'
+      facecolor2: '#f9f9f9'
+    regions:
+      Nordafrica:
+        label: ""
+        codes:
+        - DZ
+        - TN
+        - MA
   Indipendenti:
     config:
       facecolor1: orange
@@ -501,7 +523,6 @@ maps:
         <<: *small_city
       - address: Brno, CZ
         <<: *small_city
-
     regions:
       Austria:
         label_options:
@@ -559,7 +580,7 @@ maps:
       "Venezia":
         label: "Lombardo\nVeneto"
         label_options:
-          x: 1.5  # -2
+          x: 3  # -2
           y: -1.2
         x-build-codes:
         - HU
@@ -639,7 +660,7 @@ maps:
       Bulgaria:
         codes:
         - BG
-        - EL51
+        - EL51 # This was in Bulgaria in 1915, but to teach current borders to kids, we could put it in Greece.
       Romania:
         label_options:
           y: -2
@@ -777,8 +798,8 @@ maps:
       Torino:
         label: Piemonte
         label_options:
-          y: -1
-          rotation: 20
+          y: 0
+          rotation: -60
         codes:
         - ITC1
         - ITC2
@@ -798,9 +819,8 @@ maps:
         - ITH53
         - ITH54
         - ITI1
-
       Napoli:
-        label: "Regno\ndelle due\nSicilie"
+        label: "Regno\ndelle\ndue\nSicilie"
         label_options:
           y: 2
           x: -1
