@@ -56,7 +56,9 @@ class Config:
         return self.config()["links"]
     def cache_filename(self, state: str):
         return f"tmp-{self.suffix}-{state}.geojson"
-
+    @property
+    def states(self):
+        return self.maps.keys()
     def get_europe(self) -> GeoDataFrame:
         europe = self.config()["europe_borders"]
         eu_area = gpd.read_file(StringIO(json.dumps(europe)))
@@ -148,7 +150,7 @@ def togli_isolette(area, base=1):
 
 
 class State:
-    def __init__(self, state_name, config):
+    def __init__(self, state_name: str, config: Config):
         self.name = state_name
         self.config = config
         self._state = config.maps[state_name]
@@ -411,10 +413,13 @@ class Board:
             x = dict(fontconfig, **s)
             annotate_coords(ax=self.ax, **x)
 
-    def save(self):
-        cfg = dict(dpi=92, bbox_inches="tight", transparent=True)
-        self.fig.savefig(f"/tmp/{self.name}-board-{config.suffix}.png", **cfg)
+    def save(self, dpi=92, bbox_inches="tight", transparent=True, **kwargs):
+        #cfg = dict(dpi=92, bbox_inches="tight", transparent=True)
+        self.fig.savefig(f"/tmp/{self.name}-board-{config.suffix}.png", 
+            dpi=dpi, bbox_inches=bbox_inches, transparent=transparent, **kwargs)
 
+    def get_state(self, state_name):
+        return State(state_name, self.config)
     def render_links(self):
         # import pdb; pdb.set_trace()
         for link in self.config.links:

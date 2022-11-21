@@ -18,7 +18,6 @@ from . import (
     maps,
     plot_net,
     prepare_neighbor_net,
-    togli_isolette,
 )
 from .utils import Config, annotate_coords
 
