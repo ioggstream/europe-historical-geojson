@@ -36,64 +36,81 @@ europe_borders: {
 
 constants:
   large_city: &large_city
-    size: 24
+    fontsize: 24
     text: "\u2299"
   small_city: &small_city
-    size: 8
+    fontsize: 10
     text: "●"
 
 seas:
+  config:
+    fontstyle: italic
+    fontname: "DejaVu Sans"
+    fontsize: 24
+  items:
   - text: "Mare Adriatico"
     xy: [16.104211, 42.684288]
     rotation: -45
     padding: [0,0]
     fontsize: 24
-  - text: "Mar Mediterraneo" # Ionio
+  - text: "Mar Ionio" # Ionio
     xy: [18.188472, 37.762008]
     fontsize: 24
     padding: [1, -2]
+    rotation: 45
+  - text: "Αιγαίο Πέλαγος\nMar Egeo" # Egeo
+    xy: [25, 37.25]
+    fontsize: 24
+    #padding: [4, -2]
+    rotation: 60
   - text: Mar Mediterraneo
     xy: [11.4822, 39.1299]
     fontsize: 24
     rotation: -45
     padding: [1, 1]
-  - text: Mar Mediterraneo
+  - text: Mar Mediterráneo
     fontsize: 24
     xy: [4.3976, 41.2041]
     padding: [0, -1]
-  - text: "Oceano Atlantico"
+  - text: "Atlantic Ocean\nOceano Atlantico"
     fontsize: 24
     xy: [-4.4793, 45.2368]
-  - text: "Oceano Atlantico"
-    fontsize: 24
-    xy: [-10.4998, 40.4393]
-    rotation: 90
-  - text: "Mare del Nord"
+#  - text: "Oceano Atlantico"
+#    fontsize: 24
+#    xy: [-10.4998, 40.4393]
+#    rotation: 90
+  - text: "North Sea\n(Mare del Nord)"
     fontsize: 24
     xy: [2.94, 56.38]
   - text: Mar Baltico
     fontsize: 24
     xy: [19.82, 58.58]
-  - text: Mare Nero
+  - text: "Черно море\nMar Nero"
     fontsize: 24
     rotation: 0
     xy: [29.964787, 42.431873]
-
 links:
 - [Cagliari, Trapani]
 - ["porto torres, Italia", "Le Lavandou, France"]
 - [edinburg, bergen]
 - [smirne, atene]
 - [valona, otranto]
+- [Ancona, Zara Vecchia]
 - [Frederikshavn, Goteborg]
 - [Hirtshals, Kristiansand]
 - [graddo, turku]
-- ["Sangatte, France", "Dover, United kingdom"]
-- [Cherbourg, Bornemouth]
-- [Belfast, Portpatrick]
-- [Wexford, Fishguard]
-- [Ancona, Zara Vecchia]
-- ["Lowestoft", "L'Aia, NL"]
+# - ["Sangatte, France", "Dover, United kingdom"]
+- ["Scotland", "Bergen"]
+# - [Cherbourg, Bornemouth]
+# - [Belfast, Portpatrick]
+#- [Wexford, Fishguard]
+# - ["Lowestoft", "L'Aia, NL"]
+- ["Ireland", "Wales"]
+- ["Ireland", "Scotland"]
+- ["Bretagne", "London"]
+- ["Benelux", "London"]
+- ["Sangatte, France", "London"]
+- ["Portugal", "Ireland"]
 - ["Cala Rajada, Baleares, Espana", "Porto Palma, Italia"]
 - ["Orga, CY", "Anamur, Turkye"]
 - ["Pafos, CY", "Kato Zakros, GR"]
@@ -104,7 +121,10 @@ maps:
     config:
       facecolor1: '#4735bc'
       facecolor2: '#4735bc'
-    # translate: [-1.0, -2.0]
+    # Make the UK a bit bigger
+    #  to make some more space for tanks.
+    translate: [1, -9.5]
+    scale: [1.3, 1.2]
     citta:
       - address: London, UK
       - address: Liverpool, UK
@@ -148,10 +168,24 @@ maps:
         - UKF
         - UKJ
         - UKK
+  UK2:
+    config:
+      facecolor1: '#4735bc'
+      facecolor2: '#4735bc'
+    translate: [0, 1.2]
+    scale: [1.0, 1.0]
+    citta:
+    - address: Dublin, Ireland
+    regions:
       Ireland:
         codes:
         - IE
         - UKN
+  UK3:
+    config:
+      facecolor1: '#4735bc'
+      facecolor2: '#4735bc'
+    regions:
       Cipro:
         codes:
         - CY
@@ -263,6 +297,18 @@ maps:
           y: -2
         codes:
         - file://data/geojson/poland-1914.geojson
+  Africa:
+    config:
+      facecolor1: '#f9f9f9'
+      facecolor2: '#f9f9f9'
+    regions:
+      Nordafrica:
+        neutral: true
+        label: ""
+        codes:
+        - DZ
+        - TN
+        - MA
   Indipendenti:
     config:
       facecolor1: orange
@@ -272,12 +318,26 @@ maps:
         <<: *small_city
       - address: Anversa, Belgium
         <<: *small_city
-      - address: Barcelona, Spain
-        <<: *small_city
-      - address: Lisboa, Portugal
-        <<: *small_city
-      - address: Madrid, Spain
-        <<: *small_city
+    regions:
+      Svizzera:
+        neutral: true
+        codes:
+        - CH
+        - LI
+      Benelux:
+        label: "Be.Ne.Lux"
+        label_options:
+          rotation: 80
+        codes:
+        - BE
+        - NL
+        - LU
+
+  Scandinanvia:
+    config:
+      facecolor1: orange
+      facecolor2: orange
+    citta:
       - address: Oslo, Norway
         <<: *small_city
       - address: Bergen, Norway
@@ -287,6 +347,31 @@ maps:
       - address: Goteborg, Sweden
         <<: *small_city
       - address: Copenhagen, Denmark
+        <<: *small_city
+    regions:
+      Denmark:
+        codes:
+        - "DK"
+      Sverige:
+        label: "Sverige\n(Svezia)"
+        codes:
+        - "SE"
+      Norway:
+        label: "Norge\n(Norvegia)"
+        label_options:
+          x: -2
+        codes:
+        - "NO"
+  Iberica:
+    config:
+      facecolor1: "#FFDB58"
+      facecolor2: "#FFDB58"
+    citta:
+      - address: Barcelona, Spain
+        <<: *small_city
+      - address: Lisboa, Portugal
+        <<: *small_city
+      - address: Madrid, Spain
         <<: *small_city
       - address: Coimbra, Portugal
         <<: *small_city
@@ -312,13 +397,7 @@ maps:
         <<: *small_city
       - address: Pamplona, Espana
         <<: *small_city
-      - address: Varna, Bulgaria
-        <<: *small_city
     regions:
-      Svizzera:
-        codes:
-        - CH
-        - LI
       Portugal:
         label_options:
           rotation: 90
@@ -340,25 +419,20 @@ maps:
         - ES3
         - ES4
         - ES6
-        - MA
-      Denmark:
-        codes:
-        - "DK"
-      Sverige:
-        label: "Sverige\n(Svezia)"
-        codes:
-        - "SE"
-      Norway:
-        label: "Norge\n(Norvegia)"
-        label_options:
-          x: -2
-        codes:
-        - "NO"
-      Benelux:
-        codes:
-        - BE
-        - NL
-        - LU
+        - 1592819  # Tangeri
+        - 2429544  # Driouch
+        - 2432234  # Berkane
+        - 1719451  # Nador
+
+  Balcanici:
+    config:
+      facecolor1: orange
+      facecolor2: orange
+    citta:
+      - address: Varna, Bulgaria
+        <<: *small_city
+
+    regions:
       Serbia:
         codes:
         - "file://data/geojson/map-Serbia.geojson"
@@ -581,10 +655,20 @@ maps:
         codes:
         - CZ
       Galizia:
+        x-build-codes:
+        - PL21
+        - PL225
+        - 130957 # Pre-carpazia PL
+        - 72380 # Leopoli
+        - 72488 # Ivano-Frankivsk
+        - 72525 # Ternopil
+        - 72526 # Chernivitsi UA
+
         codes:
         - file://data/geojson/map-Galizia.geojson
         - RO215
       Ungheria:
+        label: "Magyarország\n(Ungheria)"
         codes:
         - file://data/geojson/map-Ungheria.geojson
 
@@ -612,21 +696,24 @@ maps:
         <<: *small_city
 
     regions:
-      Turkiye:
+      Ottoman Empire:
         codes:
-        - TR1
-        - TR21 # Tracia
-        - TR22
-        - TR4
-        - TR8
-      Egea:
-        codes:
-        - TR3
-      Antalya:
-        codes:
-        - TR5
-        - TR6
-        - TR7
+        - TR
+      # Turkiye:
+      #   codes:
+      #   - TR1
+      #   - TR21 # Tracia
+      #   - TR22
+      #   - TR4
+      #   - TR8
+      # Egea:
+      #   codes:
+      #   - TR3
+      # Antalya:
+      #   codes:
+      #   - TR5
+      #   - TR6
+      #   - TR7
   France:
     label: France
     config:

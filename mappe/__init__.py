@@ -26,6 +26,8 @@ FONT_ARIAL = "DejaVu Sans"
 
 FONT_REGION = "Liberation Sans"
 FONT_REGION_COLOR = "black"
+FONT_REGION_WEIGHT = "bold"
+LARGE_CITY_FONT = "DejaVu Serif"
 ZORDER_BG = 0
 ZORDER_REGION_FC1 = 200
 ZORDER_REGION_FC2 = 100
@@ -254,6 +256,7 @@ class State:
         xytext=None,
         fontname=FONT_REGION,
         color=FONT_REGION_COLOR,
+        fontweight=FONT_REGION_WEIGHT,
         ax=plt,
     ):
         region_name = region.name.values[0]
@@ -276,7 +279,7 @@ class State:
             color=color,
             fontname=fontname,
             # fontname="URW Bookman", color="black", fontsize=16,
-            # fontstyle="italic",
+            fontweight=fontweight,
             rotation=rotation,
             textcoords="offset points",
         )
@@ -368,7 +371,7 @@ class State:
         address,
         text=LARGE_CITY,
         fontsize=24,
-        fontname="DejaVu Serif",
+        fontname=LARGE_CITY_FONT,
         ax=plt,
         **kwargs,
     ):
@@ -415,7 +418,7 @@ class Board:
 
     def save(self, dpi=92, bbox_inches="tight", transparent=True, **kwargs):
         #cfg = dict(dpi=92, bbox_inches="tight", transparent=True)
-        self.fig.savefig(f"/tmp/{self.name}-board-{config.suffix}.png", 
+        self.fig.savefig(f"/tmp/{self.name}-board-{config.suffix}.png",
             dpi=dpi, bbox_inches=bbox_inches, transparent=transparent, **kwargs)
 
     def get_state(self, state_name):
@@ -449,42 +452,56 @@ def render_board(countries=COUNTRIES, background=False, plot_cities=True, render
     countries = countries or COUNTRIES
     config = config or Config()
 
-    fig_risk, risk_board = get_board()
+    risk_board = Board("risk", background=False, config=config)
     full_board = Board("full", background=True, config=config)
     label_board = Board("label", config=config)
     links_board = Board("links", config=config)
-    if background:
-        eu = config.get_europe().to_crs(MY_CRS)
-        eu.plot(ax=risk_board, facecolor="lightblue")
 
     with Pool(processes=20) as pool:
-        pool.map(
-            partial(
+        render_full = partial(
                 lambda state, **kwargs: State(state, config=config).render(**kwargs),
                 ax=full_board.ax,
                 plot_geo=True,
                 plot_labels=True,
                 plot_cities=plot_cities,
                 plot_state_labels=False,
-            ),
-            countries,
+            )
+        render_label = partial(
+            lambda state, **kwargs: State(state, config=config).render(**kwargs),
+            ax=label_board.ax,
+            plot_geo=False,
+            plot_labels=True,
+            plot_cities=True,
+            plot_state_labels=True,
         )
+        render_risk = partial(
+            lambda state, **kwargs: State(state, config=config).render(**kwargs),
+            ax=risk_board.ax,
+            plot_geo=True,
+            plot_labels=False,
+            plot_cities=False,
+            plot_state_labels=False,
+        )
+
+        pool.map(render_risk, countries)
+        pool.map(render_label, countries)
         #    pool.map(partial(render_state, ax=label_board, plot_geo=False, plot_labels=True, plot_cities=True,  plot_state_labels=False), countries)
-    #    pool.map(partial(render_state, ax=links_board, plot_geo=False, plot_labels=False, plot_cities=False, plot_state_labels=False), countries)
+        #    pool.map(partial(render_state, ax=links_board, plot_geo=False, plot_labels=False, plot_cities=False, plot_state_labels=False), countries)
 
     full_board.render_seas()
     if render_links:
         full_board.render_links()
 
-    label_board.render_links()
+    links_board.render_links()
     label_board.render_seas()
     label_board.save()
 
     if render_net:
         add_neighbour_net(risk_board)
 
-    # add_basemap(full_board, crs=str(MY_CRS), )
+    risk_board.save()
     full_board.save()
+    label_board.save()
 
 
 def add_neighbour_net(ax, config=None):
