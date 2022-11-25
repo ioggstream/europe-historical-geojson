@@ -311,19 +311,25 @@ maps:
         - MA
   Indipendenti:
     config:
-      facecolor1: orange
-      facecolor2: orange
-    citta:
-      - address: Amsterdam, Netherlands
-        <<: *small_city
-      - address: Anversa, Belgium
-        <<: *small_city
+      facecolor1: '#939393'
+      facecolor2: '#939393'
     regions:
       Svizzera:
         neutral: true
         codes:
         - CH
         - LI
+  Benelux:
+    config:
+      facecolor1: '#ff55ff' 
+      facecolor2: '#ff55ff' 
+    citta:
+      - address: Amsterdam, Netherlands
+        <<: *small_city
+      - address: Anversa, Belgium
+        <<: *small_city
+    regions:
+
       Benelux:
         label: "Be.Ne.Lux"
         label_options:
@@ -449,10 +455,14 @@ maps:
         - EL52
         - EL53
         - EL54
+        - EL514
+        - EL515
       Bulgaria:
         codes:
         - BG
-        - EL51
+        - EL511  # Under Bulgaria in 1914 
+        - EL512  # Under Bulgaria in 1914
+        - EL513  # Under Bulgaria in 1914
       Romania:
         label_options:
           y: -2
