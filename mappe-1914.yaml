@@ -321,8 +321,8 @@ maps:
         - LI
   Benelux:
     config:
-      facecolor1: '#ff55ff' 
-      facecolor2: '#ff55ff' 
+      facecolor1: '#ff55ff'
+      facecolor2: '#ff55ff'
     citta:
       - address: Amsterdam, Netherlands
         <<: *small_city
@@ -460,7 +460,7 @@ maps:
       Bulgaria:
         codes:
         - BG
-        - EL511  # Under Bulgaria in 1914 
+        - EL511  # Under Bulgaria in 1914
         - EL512  # Under Bulgaria in 1914
         - EL513  # Under Bulgaria in 1914
       Romania:

@@ -18,8 +18,8 @@ from pandas import DataFrame
 from shapely.geometry import MultiPolygon, Polygon, shape
 from shapely.ops import cascaded_union
 
-from .constants import *
-from .utils import *
+from mappe.constants import *
+from mappe.utils import *
 
 FONT_REGION = "eufm10"
 FONT_ARIAL = "DejaVu Sans"
@@ -41,26 +41,32 @@ requests_cache.install_cache("demo_cache")
 seas = NotImplementedError
 render_state = NotImplementedError
 
+
 class Config:
     def __init__(self, filename: str = "mappe.yaml"):
-        self.config = lambda : yaml.safe_load(Path(filename).read_text())
+        self.config = lambda: yaml.safe_load(Path(filename).read_text())
         self.filename = filename
         self.suffix = Path(filename).stem
 
     @property
     def maps(self):
         return self.config()["maps"]
+
     @property
     def seas(self):
         return self.config()["seas"]
+
     @property
     def links(self):
         return self.config()["links"]
+
     def cache_filename(self, state: str):
         return f"tmp-{self.suffix}-{state}.geojson"
+
     @property
     def states(self):
         return self.maps.keys()
+
     def get_europe(self) -> GeoDataFrame:
         europe = self.config()["europe_borders"]
         eu_area = gpd.read_file(StringIO(json.dumps(europe)))
@@ -84,7 +90,6 @@ def prepare_neighbor_net(gdf: GeoDataFrame, nbr: dict):
         print(index, neighbors)
         nbr[index]["nbr"] = neighbors
         nbr[index]["count"] = len(neighbors)
-
 
 
 config = Config()
@@ -159,8 +164,7 @@ class State:
         self._gdf = None
 
     def get_regions(self) -> dict:
-        """@returns: a dict containing all the regions' geometries.
-        """
+        """@returns: a dict containing all the regions' geometries."""
         regions = self._state["regions"]
         return {k: join_areas(v["codes"]) for k, v in regions.items()}
 
@@ -197,7 +201,9 @@ class State:
             ret = gpd.read_file(cache_file.open())
             assert ret.crs == EPSG_4326_WGS84
             if not save:
-                ret.geometry = ret.geometry.affine_transform([scale[0], 0, 0, scale[1], translate[0], translate[1]])
+                ret.geometry = ret.geometry.affine_transform(
+                    [scale[0], 0, 0, scale[1], translate[0], translate[1]]
+                )
 
             return ret
         regions = list(self.get_regions().items())
@@ -218,30 +224,34 @@ class State:
         #
         # Restrict state borders using a specific geojson.
         #
-        if borders:= self.get_historical_borders():
+        if borders := self.get_historical_borders():
             ret.geometry = ret.geometry.intersection(borders)
 
         ret = ret.set_crs(EPSG_4326_WGS84)
         if not save:
-            ret.geometry = ret.geometry.affine_transform([scale[0], 0, 0, scale[1], translate[0], translate[1]])
+            ret.geometry = ret.geometry.affine_transform(
+                [scale[0], 0, 0, scale[1], translate[0], translate[1]]
+            )
         assert ret.crs == EPSG_4326_WGS84
         return ret
 
     def get_historical_borders(self):
         """Evaluate the country borders from the state config.
-            It is computed as the union of all the identifiers containes int the country-borders key.
+        It is computed as the union of all the identifiers containes int the country-borders key.
         """
 
         def _open_geojson_or_nuts(label_or_geojson):
             if label_or_geojson.endswith("json"):
-                return gpd.read_file(open(label_or_geojson), crs=EPSG_4326_WGS84).unary_union
+                return gpd.read_file(
+                    open(label_or_geojson), crs=EPSG_4326_WGS84
+                ).unary_union
             return get_area(label_or_geojson).unary_union
 
         geo_config = self._state.get("country-borders", [])
         geo_config = geo_config if isinstance(geo_config, list) else [geo_config]
 
         borders = None
-        for g in  geo_config:
+        for g in geo_config:
             new_borders = _open_geojson_or_nuts(g)
             borders = new_borders if borders is None else borders.union(new_borders)
         return borders
@@ -250,7 +260,8 @@ class State:
     def cities(self):
         return self._state.get("citta", [])
 
-    def annotate_region(self,
+    def annotate_region(
+        self,
         region,
         text=None,
         xytext=None,
@@ -287,9 +298,7 @@ class State:
     def state_center(self, my_crs=MY_CRS):
         return baricenter(self.gdf.to_crs(my_crs))
 
-    def render(self,
-        ax, plot_labels=True, plot_geo=True, plot_cities=True, **kwargs
-    ):
+    def render(self, ax, plot_labels=True, plot_geo=True, plot_cities=True, **kwargs):
         color_config = self._state["config"]
         self._render(
             ax=ax,
@@ -317,7 +326,6 @@ class State:
         empire = self.gdf
         state_label = self.name
         state_label_font_size = 48
-
 
         state_archive[state_label] = empire
         if plot_state_labels_only:
@@ -356,13 +364,30 @@ class State:
         # Draw borders with different colors.
         if plot_geo:
             empire.plot(
-                ax=ax, edgecolor="black", facecolor=facecolor2, linewidth=2, alpha=1.0, zorder=ZORDER_REGION_FC2
+                ax=ax,
+                edgecolor="black",
+                facecolor=facecolor2,
+                linewidth=2,
+                alpha=1.0,
+                zorder=ZORDER_REGION_FC2,
             )
             empire.plot(
-                ax=ax, edgecolor="black", facecolor=facecolor1, linewidth=0, alpha=0.5, zorder=ZORDER_REGION_FC1
+                ax=ax,
+                edgecolor="black",
+                facecolor=facecolor1,
+                linewidth=0,
+                alpha=0.5,
+                zorder=ZORDER_REGION_FC1,
             )
         else:
-            empire.plot(ax=ax, edgecolor="black", facecolor="none", linewidth=0, alpha=0, zorder=ZORDER_REGION_FC0)
+            empire.plot(
+                ax=ax,
+                edgecolor="black",
+                facecolor="none",
+                linewidth=0,
+                alpha=0,
+                zorder=ZORDER_REGION_FC0,
+            )
 
         return empire
 
@@ -385,10 +410,19 @@ class State:
         log.warning(f"Annotating {address} with {text}, kwargs: {kwargs}")
         tx, ty = self._state.get("translate", [0, 0])
         a11, a22 = self._state.get("scale", [1, 1])
-        log.warning(f"Annotating {text} at {coords} with translate {tx}, {ty} and scale {a11}, {a22}")
-        annotate_coords(xy=coords, text=text, translate=(tx,ty), scale=(a11,a22), fontname=fontname,
-        fontsize=fontsize,ax=ax, **kwargs)
-
+        log.warning(
+            f"Annotating {text} at {coords} with translate {tx}, {ty} and scale {a11}, {a22}"
+        )
+        annotate_coords(
+            xy=coords,
+            text=text,
+            translate=(tx, ty),
+            scale=(a11, a22),
+            fontname=fontname,
+            fontsize=fontsize,
+            ax=ax,
+            **kwargs,
+        )
 
 
 #
@@ -398,6 +432,7 @@ from multiprocessing import Manager
 
 manager = Manager()
 state_archive = manager.dict()
+
 
 class Board:
     def __init__(self, name, config, background=False, ax=None) -> None:
@@ -417,12 +452,18 @@ class Board:
             annotate_coords(ax=self.ax, **x)
 
     def save(self, dpi=92, bbox_inches="tight", transparent=True, **kwargs):
-        #cfg = dict(dpi=92, bbox_inches="tight", transparent=True)
-        self.fig.savefig(f"/tmp/{self.name}-board-{config.suffix}.png",
-            dpi=dpi, bbox_inches=bbox_inches, transparent=transparent, **kwargs)
+        # cfg = dict(dpi=92, bbox_inches="tight", transparent=True)
+        self.fig.savefig(
+            f"/tmp/{self.name}-board-{config.suffix}.png",
+            dpi=dpi,
+            bbox_inches=bbox_inches,
+            transparent=transparent,
+            **kwargs,
+        )
 
     def get_state(self, state_name):
         return State(state_name, self.config)
+
     def render_links(self):
         # import pdb; pdb.set_trace()
         for link in self.config.links:
@@ -445,10 +486,24 @@ class Board:
             if all(x is not None for x in (src, dst)):
                 line = geoline(src, dst)
                 line = line.set_crs(EPSG_4326_WGS84).to_crs(MY_CRS)
-                line.plot(ax=self.ax, color="black", linewidth=2, linestyle="dashed", zorder=ZORDER_LINKS)
+                line.plot(
+                    ax=self.ax,
+                    color="black",
+                    linewidth=2,
+                    linestyle="dashed",
+                    zorder=ZORDER_LINKS,
+                )
 
 
-def render_board(countries=COUNTRIES, background=False, plot_cities=True, render_net=True, render_links=False, config=None, **kwargs):
+def render_board(
+    countries=COUNTRIES,
+    background=False,
+    plot_cities=True,
+    render_net=True,
+    render_links=False,
+    config=None,
+    **kwargs,
+):
     countries = countries or COUNTRIES
     config = config or Config()
 
@@ -459,13 +514,13 @@ def render_board(countries=COUNTRIES, background=False, plot_cities=True, render
 
     with Pool(processes=20) as pool:
         render_full = partial(
-                lambda state, **kwargs: State(state, config=config).render(**kwargs),
-                ax=full_board.ax,
-                plot_geo=True,
-                plot_labels=True,
-                plot_cities=plot_cities,
-                plot_state_labels=False,
-            )
+            lambda state, **kwargs: State(state, config=config).render(**kwargs),
+            ax=full_board.ax,
+            plot_geo=True,
+            plot_labels=True,
+            plot_cities=plot_cities,
+            plot_state_labels=False,
+        )
         render_label = partial(
             lambda state, **kwargs: State(state, config=config).render(**kwargs),
             ax=label_board.ax,
@@ -513,16 +568,16 @@ def add_neighbour_net(ax, config=None):
     df = df.intersects(config.get_europe())
     prepare_neighbor_net(df, nbr)
     plot_net(nbr, ax)
-    df.plot(ax=ax, color='blue')
+    df.plot(ax=ax, color="blue")
 
     for region_id, values in nbr.items():
         annotate_coords(
-                values["coords"],
-                f"w: {values['count']}",
-                textcoords="offset points",
-                # xytext=(-20, -20),
-                ax=ax
-            )
+            values["coords"],
+            f"w: {values['count']}",
+            textcoords="offset points",
+            # xytext=(-20, -20),
+            ax=ax,
+        )
 
 
 def get_board():
@@ -576,6 +631,7 @@ def find_region(region_name):
         if not region.empty:
             return region
     return None
+
 
 def save_states(config):
     for c in COUNTRIES:

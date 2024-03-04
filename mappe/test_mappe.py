@@ -3,6 +3,7 @@ from pathlib import Path
 import geopandas as gpd
 import yaml
 from matplotlib import pyplot as plt
+from utils import Config, annotate_coords
 
 from . import (
     COUNTRIES,
@@ -19,7 +20,6 @@ from . import (
     plot_net,
     prepare_neighbor_net,
 )
-from .utils import Config, annotate_coords
 
 
 def test_render_background_masked_ok():
@@ -37,6 +37,7 @@ def test_render_background_masked_ok():
     )
     fig.savefig("masked-terrain-board.png", dpi=300, transparent=True)
 
+
 def test_unite_maps():
     fig, ax = get_board()
     mask = gpd.read_file(open("germany-1914-boundaries.geojson")).set_crs(
@@ -52,7 +53,8 @@ def test_unite_maps():
 
 def test_get_historical_borders():
     borders = get_historical_borders(
-        {"country-borders": ["germany-1914-boundaries.geojson", "BE"]})
+        {"country-borders": ["germany-1914-boundaries.geojson", "BE"]}
+    )
     plt.plot(borders[0].exterior.xy[0], borders[0].exterior.xy[1])
     plt.show()
 
@@ -73,8 +75,8 @@ def test_generate_net():
         df = df.append(get_state(x))
     df = intersect(df, _get_europe())
     df.plot(ax=ax)
-    nbr={}
-    prepare_neighbor_net(df,nbr)
+    nbr = {}
+    prepare_neighbor_net(df, nbr)
     plot_net(nbr, ax)
 
     for region_id, values in nbr.items():
@@ -84,7 +86,7 @@ def test_generate_net():
             textcoords="offset points",
             xytext=(-20, -20),
             ax=ax,
-            color="black"
+            color="black",
         )
 
     fig.savefig("./tmp-nbr_net.png")
@@ -151,7 +153,6 @@ def test_render_labels_ok():
         )
     # render_state(state_label="Italia", ax=label_board, plot_geo=False, plot_labels=True)
     fig_label.savefig("label-board.eps", dpi=300, transparent=True, format="eps")
-
 
 
 from functools import partial

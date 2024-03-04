@@ -14,7 +14,7 @@ from requests import get
 from shapely.geometry import MultiPolygon, Point, shape
 from shapely.ops import cascaded_union
 
-from .constants import EPSG_4326_WGS84, MY_CRS
+from mappe.constants import EPSG_4326_WGS84, MY_CRS
 
 log = logging.getLogger(__name__)
 ZORDER_TEXT = 1000
@@ -26,15 +26,18 @@ def get_axis():
     fig.set_size_inches(10, 10)
     return fig, ax
 
+
 def intersect(df1: GeoDataFrame, df2: GeoDataFrame) -> GeoDataFrame:
     assert df1.crs == df2.crs
     return gpd.overlay(df1, df2, how="intersection")
+
 
 class Map:
     def __init__(self, name, config):
         self.name = name
         self.config = config
         self.gdf = None
+
 
 def prepare_neighbor_net(gdf: GeoDataFrame, nbr: dict):
     for index, row in gdf.iterrows():
@@ -154,10 +157,17 @@ def get_polygons(label, retry=0):
     return ret.content.decode()
 
 
-def annotate_coords(xy, text, translate=(0,0), scale=(1,1), ax=plt, padding=(0, 0), **kwargs):
+def annotate_coords(
+    xy, text, translate=(0, 0), scale=(1, 1), ax=plt, padding=(0, 0), **kwargs
+):
     tx, ty = translate
     a11, a22 = scale
-    xy = GeoSeries(Point(xy[0], xy[1])).affine_transform([a11, 0, 0, a22, tx, ty]).geometry[0].coords[:][0]
+    xy = (
+        GeoSeries(Point(xy[0], xy[1]))
+        .affine_transform([a11, 0, 0, a22, tx, ty])
+        .geometry[0]
+        .coords[:][0]
+    )
 
     xytext = kwargs.get("xytext", None)
     fontsize = kwargs.get("fontsize", 24)
@@ -170,7 +180,9 @@ def annotate_coords(xy, text, translate=(0,0), scale=(1,1), ax=plt, padding=(0, 
     map_coords = point_to_map_coordinates(*coords)
     # Annotate the given point with centered alignment.
     log.debug(f"annotating {text} @{xy}, {translate}, {scale}")
-    ax.annotate(text=text, xy=map_coords, ha="center", va="center", zorder=ZORDER_TEXT, **kwargs)
+    ax.annotate(
+        text=text, xy=map_coords, ha="center", va="center", zorder=ZORDER_TEXT, **kwargs
+    )
 
 
 def geolocate(address):
@@ -224,7 +236,7 @@ def geoline(x, y):
 
 
 def baricenter(s: GeoDataFrame):
-    """Ritorna il  baricentro di una geometria """
+    """Ritorna il  baricentro di una geometria"""
     return s.unary_union.representative_point().coords[:][0]
 
 
