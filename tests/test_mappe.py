@@ -1,31 +1,31 @@
+from functools import partial
+from multiprocessing import Pool
 from pathlib import Path
 
+import contextily as ctx
 import geopandas as gpd
+import pytest
 import yaml
+from contextily import add_basemap
 from matplotlib import pyplot as plt
-from utils import Config, annotate_coords
 
-from . import (
+from mappe import (  # get_historical_borders,; get_state,; maps,
     COUNTRIES,
     MY_CRS,
-    _get_europe,
-    add_basemap,
-    annotate_region,
-    ctx,
+    Config,
+    State,
     get_board,
-    get_historical_borders,
-    get_state,
     intersect,
-    maps,
     plot_net,
     prepare_neighbor_net,
 )
+from mappe.utils import annotate_coords
 
 
-def test_render_background_masked_ok():
-    diff = Config().get_europe().to_crs(MY_CRS)
+def test_render_background_masked_ok(config, europe):
+    diff = europe
     for c in COUNTRIES:
-        diff = diff - get_state(c).to_crs(MY_CRS).unary_union
+        diff = diff - State(c, config).to_crs(MY_CRS).unary_union
 
     fig, ax = get_board()
     diff.plot(ax=ax, color="lightblue")
@@ -59,21 +59,30 @@ def test_get_historical_borders():
     plt.show()
 
 
-def test_render_background_ok():
+def test_render_background_ok(europe):
     fig, ax = get_board()
-    eu = _get_europe().to_crs(MY_CRS)
-    eu.plot(ax=ax, color="none")
+    europe.plot(ax=ax, color="none")
 
     add_basemap(ax, crs=str(MY_CRS), source=ctx.providers.Esri.WorldPhysical)
     fig.savefig("/tmp/terrain-board.png", dpi=300, transparent=True)
 
 
-def test_generate_net():
+@pytest.fixture
+def config():
+    return Config()
+
+
+@pytest.fixture
+def europe(config):
+    return config.get_europe().to_crs(MY_CRS)
+
+
+def test_generate_net(config, europe):
     fig, ax = get_board()
     df = get_state(COUNTRIES[0])
     for x in COUNTRIES[1:]:
         df = df.append(get_state(x))
-    df = intersect(df, _get_europe())
+    df = intersect(df, europe)
     df.plot(ax=ax)
     nbr = {}
     prepare_neighbor_net(df, nbr)
@@ -123,17 +132,19 @@ def test_full_net():
     fig.savefig("/tmp/test_nbr_net.png")
 
 
-def test_annotate_region():
-    gdf = get_state("France")
-    region_id = gdf.name[0]
-    region = gdf[gdf.name == region_id]
-    annotate_region("France", region)
-    raise NotImplementedError
+def test_annotate_region(config):
+    from mappe import State
+
+    state: State = State("France", config)
+    region_id = state.gdf.name[0]
+    region = state.gdf[state.gdf.name == region_id]
+    state.annotate_region("France", region)
 
 
-def test_render_state():
+def test_render_state(config):
     fig, ax = get_board()
-    render_state("Italia", ax=ax)
+    s = State("Italia", config)
+    s.render(ax=ax)
     fig.savefig("/tmp/test-render-state.png", dpi=300)
 
 
@@ -155,14 +166,10 @@ def test_render_labels_ok():
     fig_label.savefig("label-board.eps", dpi=300, transparent=True, format="eps")
 
 
-from functools import partial
-from multiprocessing import Pool
-
-from . import render_state
-
-
 def test_render_cities_ok():
     fig_label, label_board = get_board()
+    render_state = lambda state: State(state, config).render
+
     with Pool(processes=20) as pool:
         pool.map(
             partial(
@@ -178,8 +185,9 @@ def test_render_cities_ok():
     fig_label.savefig("cities-board.eps", dpi=300, transparent=True, format="eps")
 
 
-def test_render_state_labels_ok():
+def test_render_state_labels_ok(config):
     fig_label, label_board = get_board()
+    render_state = lambda state: State(state, config).render
     with Pool(processes=20) as pool:
         pool.map(
             partial(
